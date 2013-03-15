@@ -21,12 +21,16 @@ module QueueingRabbit
 
   attr_accessor :logger, :client
 
-  def connect!
-    @connection ||= client.connect!
+  def connect
+    @connection ||= client.connect
   end
 
   def connection
-    @connection ||= connect!
+    @connection ||= connect
+  end
+
+  def drop_connection
+    @connection = nil
   end
 
   def enqueue(job, arguments = {})

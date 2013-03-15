@@ -8,14 +8,6 @@ module QueueingRabbit
       @queue_options ||= {}
     end
 
-    def channel_options
-      @channel_options ||= {}
-    end
-
-    def channel(options={})
-      @channel_options = options
-    end
-
     def queue(name, options = {})
       @queue_name = name
       @queue_options = options
@@ -23,6 +15,14 @@ module QueueingRabbit
 
     def queue_size
       QueueingRabbit.queue_size(self)
+    end
+
+    def channel_options
+      @channel_options ||= {}
+    end
+
+    def channel(options={})
+      @channel_options = options
     end
   end
 

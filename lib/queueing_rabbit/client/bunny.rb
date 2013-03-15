@@ -10,7 +10,7 @@ module QueueingRabbit
 
       attr_reader :connection, :exchange_name, :exchange_options
 
-      def self.connect!
+      def self.connect
         self.new(::Bunny.new(QueueingRabbit.amqp_uri),
                  QueueingRabbit.amqp_exchange_name,
                  QueueingRabbit.amqp_exchange_options)

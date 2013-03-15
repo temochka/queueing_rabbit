@@ -37,7 +37,7 @@ module QueueingRabbit
          on_tcp_connection_failure: @@on_tcp_failure}
       end
 
-      def self.connect!
+      def self.connect
         QueueingRabbit.trigger_event(:consuming_started)
 
         self.run_event_machine
