@@ -129,7 +129,7 @@ module QueueingRabbit
         connection.on_recovery(&self.class.callback(:on_tcp_recovery))
       end
 
-      def initialize(connection, exchange_name, exchange_options)
+      def initialize(connection, exchange_name, exchange_options = {})
         @connection = connection
         @exchange_name = exchange_name
         @exchange_options = exchange_options
