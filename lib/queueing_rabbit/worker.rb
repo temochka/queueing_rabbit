@@ -69,9 +69,9 @@ module QueueingRabbit
 
     def run_job(conn, job)
       conn.open_channel(job.channel_options) do |channel, _|
-        conn.listen_queue(channel, job.queue_name, job.queue_options) do |options|
-          info "performing job #{job} with options #{options.inspect}"
-          job.perform(options)
+        conn.listen_queue(channel, job.queue_name, job.queue_options) do |args|
+          info "performing job #{job} with arguments #{args.inspect}"
+          job.perform(args)
         end
       end
     end
@@ -81,9 +81,9 @@ module QueueingRabbit
       $stderr.sync = true
     end
 
-    def trap_signals(client)
+    def trap_signals(connection)
       handler = Proc.new do
-        client.disconnect {
+        connection.disconnect {
           QueueingRabbit.trigger_event(:consuming_done)
           remove_pidfile
         }
