@@ -37,13 +37,9 @@ module QueueingRabbit
       alias_method :publish, :enqueue
 
       def define_exchange(channel, options={})
-        @exchange ||= channel.direct(exchange_name,
-                                     exchange_options.merge(options))
+        channel.direct(exchange_name, exchange_options.merge(options))
       end
-
-      def exchange(*args)
-        define_exchange(*args)
-      end
+      alias_method :exchange, :define_exchange
 
       def queue_size(queue)
         queue.status[:message_count]
