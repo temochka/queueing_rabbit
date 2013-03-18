@@ -11,3 +11,7 @@ shared_context "StringIO logger" do
   end
 
 end
+
+shared_context "Evented spec" do
+  include EventedSpec::SpecHelper
+end

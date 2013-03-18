@@ -7,8 +7,9 @@ Bundler.setup(:test)
 
 require 'rspec'
 require 'rspec/autorun'
-require 'unit/support/context_string_io_logger'
-require 'unit/support/shared_examples'
+require 'evented-spec'
+require 'support/shared_contexts'
+require 'support/shared_examples'
 
 require 'queueing_rabbit'
 
