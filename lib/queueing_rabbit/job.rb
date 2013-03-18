@@ -1,7 +1,7 @@
 module QueueingRabbit
   module Job
     def queue_name
-      @queue_name ||= self.name
+      @queue_name ||= self.name.split('::')[-1]
     end
 
     def queue_options
