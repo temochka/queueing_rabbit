@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe QueueingRabbit do
+  include_context "StringIO logger"
+
   let(:connection) { mock }
   let(:queue_name) { mock }
   let(:queue_options) { { :durable => true} }
@@ -38,7 +40,6 @@ describe QueueingRabbit do
 
     before do
       subject.instance_variable_set(:@connection, connection)
-      subject.stub(:info).and_return(nil)
       connection.should_receive(:open_channel).with(channel_options)
                 .and_yield(channel, nil)
       connection.should_receive(:define_queue).with(channel,
