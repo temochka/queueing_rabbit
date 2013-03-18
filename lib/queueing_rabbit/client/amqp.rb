@@ -9,32 +9,33 @@ module QueueingRabbit
       include QueueingRabbit::Serializer
       include QueueingRabbit::Logging
       extend  QueueingRabbit::Logging
+      extend  QueueingRabbit::Client::Callbacks
 
       attr_reader :connection, :exchange_name, :exchange_options
 
-      @@on_tcp_failure = Proc.new do |_|
+      define_callback :on_tcp_failure do |_|
         fatal "unable to establish TCP connection to broker"
         EM.stop
       end
 
-      @@on_tcp_loss = Proc.new do |c, _|
+      define_callback :on_tcp_loss do |c, _|
         info "re-establishing TCP connection to broker"
         c.reconnect(false, 1)
       end
 
-      @@on_tcp_recovery = Proc.new do
+      define_callback :on_tcp_recovery do
         info "TCP connection to broker is back and running"
       end
 
-      @@on_channel_exception = Proc.new do |ch, channel_close|
+      define_callback :on_channel_error do |ch, channel_close|
         EM.stop
-        fatal "channel error: #{channel_close.reply_text}"
+        fatal "channel error occured: #{channel_close.reply_text}"
       end
 
       def self.connection_options
-        {timeout: QueueingRabbit.tcp_timeout,
-         heartbeat: QueueingRabbit.heartbeat,
-         on_tcp_connection_failure: @@on_tcp_failure}
+        {:timeout => QueueingRabbit.tcp_timeout,
+         :heartbeat => QueueingRabbit.heartbeat,
+         :on_tcp_connection_failure => self.callback(:on_tcp_failure)}
       end
 
       def self.connect
@@ -109,7 +110,7 @@ module QueueingRabbit
         ::AMQP::Channel.new(connection,
                           ::AMQP::Channel.next_channel_id,
                           options) do |c, open_ok|
-          c.on_error(&@@on_channel_exception)
+          c.on_error(&self.class.callback(:on_channel_error))
           yield c, open_ok
         end
       end
@@ -131,17 +132,17 @@ module QueueingRabbit
 
     private
 
+      def setup_callbacks
+        connection.on_tcp_connection_loss(&self.class.callback(:on_tcp_loss))
+        connection.on_recovery(&self.class.callback(:on_tcp_recovery))
+      end
+
       def initialize(connection, exchange_name, exchange_options)
         @connection = connection
         @exchange_name = exchange_name
         @exchange_options = exchange_options
 
         setup_callbacks
-      end
-
-      def setup_callbacks
-        connection.on_tcp_connection_loss(&@@on_tcp_loss)
-        connection.on_recovery(&@@on_tcp_recovery)
       end
 
     end
