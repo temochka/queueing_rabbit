@@ -122,6 +122,10 @@ module QueueingRabbit
       end
       alias_method :publish, :enqueue
 
+      def queue_size(queue)
+        raise NotImplementedError
+      end
+
     private
 
       def setup_callbacks
