@@ -52,7 +52,7 @@ module QueueingRabbit
     def validate_jobs
       if jobs.nil? || jobs.empty?
         fatal "no jobs specified to work on."
-        raise NoJobError.new("No jobs specified to work on.")
+        raise JobNotPresentError.new("No jobs specified to work on.")
       end
     end
 
