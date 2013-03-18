@@ -71,18 +71,18 @@ module QueueingRabbit
       end
 
       def define_queue(channel, queue_name, options={})
-        queue_name = queue_name.to_s
         routing_keys = [*options.delete(:routing_keys)] + [queue_name]
 
         channel.queue(queue_name.to_s, options) do |queue|
           routing_keys.each do |key|
-            queue.bind(exchange(channel), routing_key: key.to_s)
+            queue.bind(exchange(channel), :routing_key => key.to_s)
           end
         end
       end
 
       def listen_queue(channel, queue_name, options={}, &block)
-        define_queue(channel, queue_name, options).subscribe(ack: true) do |metadata, payload|
+        define_queue(channel, queue_name, options)
+            .subscribe(:ack => true) do |metadata, payload|
           begin
             process_message(deserialize(payload), &block)
             metadata.ack
@@ -93,9 +93,9 @@ module QueueingRabbit
         end
       end
 
-      def process_message(options)
+      def process_message(arguments)
         begin
-          yield options
+          yield arguments
         rescue => e
           error "unexpected error #{e.class} occured: #{e.message}"
           debug e
@@ -112,13 +112,9 @@ module QueueingRabbit
       end
 
       def define_exchange(channel, options={})
-        @exchange ||= channel.direct(exchange_name,
-                                     exchange_options.merge(options))
+        channel.direct(exchange_name, exchange_options.merge(options))
       end
-
-      def exchange(*args)
-        define_exchange(*args)
-      end
+      alias_method :exchange, :define_exchange
 
       def enqueue(channel, routing_key, payload)
         exchange(channel).publish(serialize(payload), :key => routing_key.to_s,
