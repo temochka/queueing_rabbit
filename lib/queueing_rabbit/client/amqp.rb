@@ -39,8 +39,6 @@ module QueueingRabbit
       end
 
       def self.connect
-        QueueingRabbit.trigger_event(:consuming_started)
-
         self.run_event_machine
 
         self.new(::AMQP.connect(QueueingRabbit.amqp_uri),
@@ -66,8 +64,6 @@ module QueueingRabbit
         info "closing AMQP broker connection..."
 
         connection.close do
-          QueueingRabbit.trigger_event(:consuming_done)
-
           yield if block_given?
 
           EM.stop { exit }

@@ -18,6 +18,8 @@ module QueueingRabbit
       trap_signals(conn)
 
       jobs.each { |job| run_job(conn, job) }
+
+      QueueingRabbit.trigger_event(:consuming_started)
     end
 
     def work!
@@ -82,6 +84,7 @@ module QueueingRabbit
     def trap_signals(client)
       handler = Proc.new do
         client.disconnect {
+          QueueingRabbit.trigger_event(:consuming_done)
           remove_pidfile
         }
       end
