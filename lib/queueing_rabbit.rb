@@ -47,10 +47,12 @@ module QueueingRabbit
   alias_method :publish, :enqueue
 
   def queue_size(job)
+    size = 0
     connection.open_channel(job.channel_options) do |c, _|
       queue = connection.define_queue(c, job.queue_name, job.queue_options)
-      connection.queue_size(queue)
+      size = connection.queue_size(queue)
     end
+    size
   end
 end
 
