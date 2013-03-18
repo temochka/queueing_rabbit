@@ -66,7 +66,7 @@ module QueueingRabbit
         connection.close do
           yield if block_given?
 
-          EM.stop
+          EM.stop if EM.reactor_running?
         end
       end
 
