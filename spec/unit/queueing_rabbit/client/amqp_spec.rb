@@ -79,6 +79,7 @@ describe QueueingRabbit::Client::AMQP do
     subject { client }
 
     before do
+      EM.stub(:reactor_running? => true)
       AMQP.stub(:connect => connection)
       QueueingRabbit::Client::AMQP.stub(:run_event_machine => true)
     end
