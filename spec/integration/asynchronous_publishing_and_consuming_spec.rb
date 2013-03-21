@@ -9,6 +9,7 @@ describe "Asynchronous publishing and consuming example",
   let(:job) { PrintLineJob }
 
   before(:all) { QueueingRabbit.client = QueueingRabbit::Client::AMQP }
+  after(:all) { QueueingRabbit.client = QueueingRabbit.default_client }
 
   context "basic consuming" do
     let(:connection) { QueueingRabbit.connection }
@@ -20,13 +21,13 @@ describe "Asynchronous publishing and consuming example",
       QueueingRabbit.drop_connection
       PrintLineJob.io = io
     end
-    
+
     it "processes enqueued jobs" do
       em {
         QueueingRabbit.connect
         queue_size = nil
 
-        delayed(0.5) { 
+        delayed(0.5) {
           3.times { QueueingRabbit.enqueue(job, :line => line) }
         }
 
