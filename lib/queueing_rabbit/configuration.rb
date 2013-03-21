@@ -15,6 +15,10 @@ module QueueingRabbit
     def heartbeat
       @heartbeat ||= 10
     end
+
+    def default_client
+      QueueingRabbit::Client::Bunny
+    end
   end
 
 end

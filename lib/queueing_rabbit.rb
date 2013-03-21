@@ -56,5 +56,5 @@ module QueueingRabbit
   end
 end
 
-QueueingRabbit.client = QueueingRabbit::Client::Bunny
+QueueingRabbit.client = QueueingRabbit.default_client
 QueueingRabbit.logger = Logger.new(STDOUT)

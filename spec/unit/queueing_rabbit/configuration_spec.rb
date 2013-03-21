@@ -6,6 +6,14 @@ describe QueueingRabbit::Configuration do
   it { should respond_to(:amqp_uri) }
   it { should respond_to(:amqp_exchange_name) }
   it { should respond_to(:amqp_exchange_options) }
-  it { should respond_to(:tcp_timeout) }
-  it { should respond_to(:heartbeat) }
+
+  its(:tcp_timeout) { should == 1 }
+  its(:heartbeat) { should == 10 }
+  its(:default_client) { should == QueueingRabbit::Client::Bunny }
+
+  describe "#configure" do
+    it "yields itself to the block" do
+      subject.configure { |obj| obj.should == subject }
+    end
+  end
 end
