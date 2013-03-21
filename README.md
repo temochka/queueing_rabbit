@@ -5,7 +5,7 @@ syntax for managing background jobs with AMQP. All jobs' argumets are
 serialized to JSON and transfered as AMQP message payloads. The library
 implements amqp and bunny gems as adapters, making it possible to use
 synchronous publishing and asynchronous consuming, which might be useful for
-Rails app running on non-EventMachine based application servers (i. e.
+Rails apps running on non-EventMachine based application servers (i. e.
 Passenger).
 
 ## Installation
