@@ -1,8 +1,8 @@
 # QueueingRabbit
 
-QueueingRabbit is a Ruby library providing convenient object-oriented syntax
-for managing background jobs using AMQP. All jobs' argumets are serialized
-to JSON and transfered using AMQP message payload. The library
+QueueingRabbit is a Ruby library that provides a convenient object-oriented
+syntax for managing background jobs with AMQP. All jobs' argumets are
+serialized to JSON and transfered as AMQP message payloads. The library
 implements amqp and bunny gems as adapters, making it possible to use
 synchronous publishing and asynchronous consuming, which might be useful for
 Rails app running on non-EventMachine based application servers (i. e.
@@ -24,7 +24,10 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+QueueingRabbit is currently in RC1 and is not recommended for production use.
+
+The docs are coming soon, currently you can check out the examples in
+`spec/integration` dir.
 
 ## Contributing
 
