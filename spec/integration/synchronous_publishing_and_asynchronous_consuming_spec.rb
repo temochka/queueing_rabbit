@@ -1,8 +1,7 @@
 require 'spec_helper'
 require 'integration/jobs/print_line_job'
 
-describe "Synchronous publishing and asynchronous consuming example",
-         QueueingRabbit::Worker do
+describe "Synchronous publishing and asynchronous consuming example" do
   include_context "StringIO logger"
   include_context "Evented spec"
 
