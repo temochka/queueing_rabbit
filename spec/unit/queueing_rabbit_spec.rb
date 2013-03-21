@@ -83,4 +83,23 @@ describe QueueingRabbit do
       subject.queue_size(job).should == size
     end
   end
+
+  describe ".purge_queue" do
+    let(:queue) { mock }
+
+    before do
+      subject.instance_variable_set(:@connection, connection)
+      connection.should_receive(:open_channel).with(channel_options)
+                .and_yield(channel, nil)
+      connection.should_receive(:define_queue).with(channel,
+                                                    queue_name,
+                                                    queue_options)
+                                              .and_return(queue)
+      queue.should_receive(:purge).and_return(true)
+    end
+
+    it 'purges messages from the queue' do
+      subject.purge_queue(job).should be_true
+    end
+  end
 end

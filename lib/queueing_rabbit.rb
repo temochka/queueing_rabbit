@@ -54,6 +54,13 @@ module QueueingRabbit
     end
     size
   end
+
+  def purge_queue(job)
+    connection.open_channel(job.channel_options) do |c, _|
+      connection.define_queue(c, job.queue_name, job.queue_options).purge
+    end
+    true
+  end
 end
 
 QueueingRabbit.client = QueueingRabbit.default_client
