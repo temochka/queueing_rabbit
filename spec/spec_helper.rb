@@ -14,6 +14,10 @@ require 'support/shared_examples'
 require 'queueing_rabbit'
 
 RSpec.configure do |config|
+  config.before(:each) {
+    QueueingRabbit.drop_connection
+  }
+
   QueueingRabbit.configure do |qr|
     qr.amqp_uri = "amqp://guest:guest@localhost:5672"
     qr.amqp_exchange_name = "queueing_rabbit_test"
