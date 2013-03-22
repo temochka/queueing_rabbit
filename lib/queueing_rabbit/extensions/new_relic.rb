@@ -8,7 +8,7 @@ module QueueingRabbit
         mod.class_eval do |klass|
           class << klass
             include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
-            add_transaction_tracer :perform, category: :task
+            add_transaction_tracer :perform, :category => :task
           end
         end
       end
