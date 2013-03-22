@@ -40,7 +40,7 @@ describe "Asynchronous publishing and consuming example" do
           end
         }
 
-        done(2.5) { queue_size.should == 0 }
+        done(3.0) { queue_size.should == 0 }
       }
     end
 
