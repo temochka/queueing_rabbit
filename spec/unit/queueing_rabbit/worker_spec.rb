@@ -88,8 +88,7 @@ describe QueueingRabbit::Worker do
 
       describe '#work!' do
         before do
-          QueueingRabbit::Client::AMQP.
-              should_receive(:join_event_machine_thread)
+          EM.should_receive(:run).and_yield
         end
 
         it 'runs #work and joins the eventmachine thread' do

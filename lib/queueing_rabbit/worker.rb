@@ -23,8 +23,9 @@ module QueueingRabbit
     end
 
     def work!
-      work
-      QueueingRabbit::Client::AMQP.join_event_machine_thread
+      EM.run do
+        work
+      end
     end
 
     def use_pidfile(filename)
