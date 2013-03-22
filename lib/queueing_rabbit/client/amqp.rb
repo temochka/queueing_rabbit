@@ -54,6 +54,9 @@ module QueueingRabbit
             QueueingRabbit.trigger_event(:event_machine_started)
           end
         end
+
+        # Block the control process while EM is starting up
+        sleep 0.5
       end
 
       def self.join_event_machine_thread
