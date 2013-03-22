@@ -81,8 +81,8 @@ module QueueingRabbit
       end
 
       def listen_queue(channel, queue_name, options={}, &block)
-        define_queue(channel, queue_name, options)
-            .subscribe(:ack => true) do |metadata, payload|
+        define_queue(channel, queue_name, options).
+            subscribe(:ack => true) do |metadata, payload|
           begin
             process_message(deserialize(payload), &block)
             metadata.ack

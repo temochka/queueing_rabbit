@@ -27,8 +27,8 @@ describe QueueingRabbit::Worker do
       end
 
       it 'raises JobNotPresentError' do
-        expect { subject.new() }
-               .to raise_error(QueueingRabbit::JobNotPresentError)
+        expect { subject.new() }.
+               to raise_error(QueueingRabbit::JobNotPresentError)
       end
     end
 
@@ -40,8 +40,8 @@ describe QueueingRabbit::Worker do
       end
 
       it 'raises JobNotFoundError' do
-        expect { subject.new(nonexistent_class_name) }
-               .to raise_error(QueueingRabbit::JobNotFoundError)
+        expect { subject.new(nonexistent_class_name) }.
+               to raise_error(QueueingRabbit::JobNotFoundError)
       end
     end
 
@@ -51,9 +51,9 @@ describe QueueingRabbit::Worker do
       it { should be }
       it { should respond_to(:jobs) }
       it 'changes used client to asynchronous' do
-        expect { creation.call }.to change { QueueingRabbit.client.to_s }
-                                    .from(QueueingRabbit::Client::Bunny.to_s)
-                                    .to(QueueingRabbit::Client::AMQP.to_s)
+        expect { creation.call }.to change { QueueingRabbit.client.to_s }.
+                                    from(QueueingRabbit::Client::Bunny.to_s).
+                                    to(QueueingRabbit::Client::AMQP.to_s)
       end
     end
   end
@@ -88,8 +88,8 @@ describe QueueingRabbit::Worker do
 
       describe '#work!' do
         before do
-          QueueingRabbit::Client::AMQP
-            .should_receive(:join_event_machine_thread)
+          QueueingRabbit::Client::AMQP.
+              should_receive(:join_event_machine_thread)
         end
 
         it 'runs #work and joins the eventmachine thread' do

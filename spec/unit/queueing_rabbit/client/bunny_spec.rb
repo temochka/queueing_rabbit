@@ -14,8 +14,8 @@ describe QueueingRabbit::Client::Bunny do
 
     describe '.connect' do
       before do
-        Bunny.should_receive(:new).with(QueueingRabbit.amqp_uri)
-                                  .and_return(connection)
+        Bunny.should_receive(:new).with(QueueingRabbit.amqp_uri).
+                                   and_return(connection)
       end
 
       it "instantiates an instance of itself" do

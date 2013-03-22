@@ -42,8 +42,8 @@ describe QueueingRabbit::Client::AMQP do
         end
 
         it 'triggers :event_machine_started event' do
-          QueueingRabbit.should_receive(:trigger_event)
-                        .with(:event_machine_started)
+          QueueingRabbit.should_receive(:trigger_event).
+                         with(:event_machine_started)
           subject.run_event_machine
         end
       end
@@ -51,8 +51,8 @@ describe QueueingRabbit::Client::AMQP do
 
     describe ".connect" do
       before do
-        AMQP.should_receive(:connect).with(QueueingRabbit.amqp_uri)
-                                     .and_return(connection)
+        AMQP.should_receive(:connect).with(QueueingRabbit.amqp_uri).
+                                      and_return(connection)
         subject.should_receive(:run_event_machine)
       end
 
@@ -98,10 +98,10 @@ describe QueueingRabbit::Client::AMQP do
       let(:payload) { JSON.dump(data) }
 
       before do
-        client.should_receive(:define_queue).with(channel, queue_name, options)
-              .and_return(queue)
-        queue.should_receive(:subscribe).with(:ack => true)
-                                        .and_yield(metadata, payload)
+        client.should_receive(:define_queue).
+               with(channel, queue_name, options).and_return(queue)
+        queue.should_receive(:subscribe).
+              with(:ack => true).and_yield(metadata, payload)
       end
 
       it 'listens to the queue and passes deserialized arguments to the block' do
@@ -123,8 +123,8 @@ describe QueueingRabbit::Client::AMQP do
         end
 
         it "silences JSON errors" do
-          expect { client.listen_queue(channel, queue_name, options) }
-                 .to_not raise_error(error)
+          expect { client.listen_queue(channel, queue_name, options) }.
+                 to_not raise_error(error)
         end
       end
     end
@@ -139,7 +139,7 @@ describe QueueingRabbit::Client::AMQP do
       end
 
       it "silences all errors risen" do
-        expect { 
+        expect {
           client.process_message(arguments) { |a| raise StandardError.new }
         }.to_not raise_error(StandardError)
       end
@@ -176,11 +176,11 @@ describe QueueingRabbit::Client::AMQP do
       let(:open_ok) { mock }
 
       before do
-        AMQP::Channel.should_receive(:next_channel_id)
-                     .and_return(next_channel_id)
-        AMQP::Channel.should_receive(:new)
-                     .with(connection, next_channel_id, options)
-                     .and_yield(channel, open_ok)
+        AMQP::Channel.should_receive(:next_channel_id).
+                      and_return(next_channel_id)
+        AMQP::Channel.should_receive(:new).
+                      with(connection, next_channel_id, options).
+                      and_yield(channel, open_ok)
         channel.should_receive(:on_error)
       end
 

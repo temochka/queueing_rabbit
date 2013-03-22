@@ -12,7 +12,7 @@ describe "Synchronous publishing and asynchronous consuming example" do
 
   context "when a message is published synchronously" do
     before do
-      QueueingRabbit.publish(job, line: line)
+      QueueingRabbit.publish(job, :line => line)
       QueueingRabbit.drop_connection
     end
 

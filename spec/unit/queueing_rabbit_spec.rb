@@ -40,8 +40,8 @@ describe QueueingRabbit do
 
     before do
       subject.instance_variable_set(:@connection, connection)
-      connection.should_receive(:open_channel).with(channel_options)
-                .and_yield(channel, nil)
+      connection.should_receive(:open_channel).with(channel_options).
+                 and_yield(channel, nil)
       connection.should_receive(:define_queue).with(channel,
                                                     queue_name,
                                                     queue_options)
@@ -70,12 +70,11 @@ describe QueueingRabbit do
 
     before do
       subject.instance_variable_set(:@connection, connection)
-      connection.should_receive(:open_channel).with(channel_options)
-                .and_yield(channel, nil)
-      connection.should_receive(:define_queue).with(channel,
-                                                    queue_name,
-                                                    queue_options)
-                                              .and_return(queue)
+      connection.should_receive(:open_channel).with(channel_options).
+                 and_yield(channel, nil)
+      connection.should_receive(:define_queue).
+                 with(channel, queue_name, queue_options).
+                 and_return(queue)
       connection.should_receive(:queue_size).with(queue).and_return(size)
     end
 
@@ -89,12 +88,10 @@ describe QueueingRabbit do
 
     before do
       subject.instance_variable_set(:@connection, connection)
-      connection.should_receive(:open_channel).with(channel_options)
-                .and_yield(channel, nil)
-      connection.should_receive(:define_queue).with(channel,
-                                                    queue_name,
-                                                    queue_options)
-                                              .and_return(queue)
+      connection.should_receive(:open_channel).
+                 with(channel_options).and_yield(channel, nil)
+      connection.should_receive(:define_queue).
+                 with(channel, queue_name, queue_options).and_return(queue)
       queue.should_receive(:purge).and_return(true)
     end
 

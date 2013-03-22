@@ -1,5 +1,5 @@
 shared_examples :client do
-  
+
   describe '#define_queue' do
     let(:exchange) { mock }
     let(:channel) { mock }
@@ -10,12 +10,12 @@ shared_examples :client do
 
     before do
       client.stub(:exchange => exchange)
-      channel.should_receive(:queue).with(queue_name, options)
-                                    .and_yield(queue)
-      queue.should_receive(:bind)
-           .with(exchange, :routing_key => routing_keys.first.to_s).ordered
-      queue.should_receive(:bind)
-           .with(exchange, :routing_key => queue_name).ordered
+      channel.should_receive(:queue).with(queue_name, options).
+                                     and_yield(queue)
+      queue.should_receive(:bind).
+            with(exchange, :routing_key => routing_keys.first.to_s).ordered
+      queue.should_receive(:bind).
+            with(exchange, :routing_key => queue_name).ordered
     end
 
     it "defines a queue and binds it to its name and the given routing keys" do
@@ -28,8 +28,8 @@ shared_examples :client do
     let(:options) { {:durable => true} }
 
     before do
-      channel.should_receive(:direct)
-             .with(QueueingRabbit.amqp_exchange_name,
+      channel.should_receive(:direct).
+              with(QueueingRabbit.amqp_exchange_name,
                    QueueingRabbit.amqp_exchange_options.merge(options))
     end
 

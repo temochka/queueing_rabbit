@@ -12,12 +12,12 @@ describe "Synchronous publishing example" do
     end
 
     let(:publishing) {
-      -> { QueueingRabbit.publish(job, line: "Hello, World!") }
+      lambda { QueueingRabbit.publish(job, :line => "Hello, World!") }
     }
 
     it 'affects the queue size' do
-      expect { 5.times { publishing.call } }
-        .to change{QueueingRabbit.queue_size(job)}.by(5)
+      expect { 5.times { publishing.call } }.
+             to change{QueueingRabbit.queue_size(job)}.by(5)
     end
   end
 
