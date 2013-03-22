@@ -1,4 +1,4 @@
-# QueueingRabbit
+# QueueingRabbit [![Build Status](https://travis-ci.org/temochka/queueing_rabbit.png?branch=master)](https://travis-ci.org/temochka/queueing_rabbit)
 
 QueueingRabbit is a Ruby library that provides a convenient object-oriented
 syntax for managing background jobs with AMQP. All jobs' argumets are
