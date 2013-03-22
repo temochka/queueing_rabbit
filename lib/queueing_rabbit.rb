@@ -6,9 +6,9 @@ require "queueing_rabbit/serializer"
 require "queueing_rabbit/client/callbacks"
 require "queueing_rabbit/client/amqp"
 require "queueing_rabbit/client/bunny"
+require "queueing_rabbit/extensions/new_relic"
 require "queueing_rabbit/job"
 require "queueing_rabbit/worker"
-# require "queueing_rabbit/new_relic"
 
 module QueueingRabbit
   extend self
