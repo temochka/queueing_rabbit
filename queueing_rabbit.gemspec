@@ -20,6 +20,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "amqp",  ">= 0.9.0"
   gem.add_dependency "bunny", ">= 0.9.0.pre7"
   gem.add_dependency "rake",  ">= 0"
+  gem.add_dependency "json",  ">= 0"
 
   gem.description   = <<description
     QueueingRabbit is a Ruby library providing convenient object-oriented syntax
