@@ -23,7 +23,7 @@ module QueueingRabbit
       end
 
       def define_queue(channel, name, options = {})
-        routing_keys = [*options.delete(:routing_keys)] + [name]
+        routing_keys = ([*options.delete(:routing_keys)] + [name]).compact
 
         queue = channel.queue(name.to_s, options)
 
