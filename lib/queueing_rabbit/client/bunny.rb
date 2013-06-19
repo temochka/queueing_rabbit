@@ -25,9 +25,13 @@ module QueueingRabbit
       def define_queue(channel, name, options = {})
         routing_keys = [*options.delete(:routing_keys)] + [name]
 
-        channel.queue(name.to_s, options) do |q|
-          routing_keys.each { |key| q.bind(exchange, :routing_key => key.to_s) }
+        queue = channel.queue(name.to_s, options)
+
+        routing_keys.each do |key|
+          queue.bind(exchange(channel), :routing_key => key.to_s)
         end
+
+        queue
       end
 
       def enqueue(channel, routing_key, payload)

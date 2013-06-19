@@ -1,28 +1,5 @@
 shared_examples :client do
 
-  describe '#define_queue' do
-    let(:exchange) { mock }
-    let(:channel) { mock }
-    let(:queue) { mock }
-    let(:queue_name) { "test_queue_name" }
-    let(:routing_keys) { [:test_job] }
-    let(:options) { {:durable => false, :routing_keys => routing_keys} }
-
-    before do
-      client.stub(:exchange => exchange)
-      channel.should_receive(:queue).with(queue_name, options).
-                                     and_yield(queue)
-      queue.should_receive(:bind).
-            with(exchange, :routing_key => routing_keys.first.to_s).ordered
-      queue.should_receive(:bind).
-            with(exchange, :routing_key => queue_name).ordered
-    end
-
-    it "defines a queue and binds it to its name and the given routing keys" do
-      client.define_queue(channel, queue_name, options)
-    end
-  end
-
   describe '#define_exchange' do
     let(:channel) { mock }
     let(:options) { {:durable => true} }

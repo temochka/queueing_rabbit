@@ -51,6 +51,22 @@ describe QueueingRabbit::Client::Bunny do
       end
     end
 
+    describe '#define_queue' do
+      let(:channel) { mock }
+      let(:queue) { mock }
+      let(:exchange) { mock }
+      let(:name) { 'queue_name_test' }
+      let(:options) { {:foo => 'bar'} }
+
+      it 'creates a queue and binds it to the global exchange' do
+        channel.should_receive(:queue).with(name, options).and_return(queue)
+        client.should_receive(:exchange).with(channel).and_return(exchange)
+        queue.should_receive(:bind).with(exchange, :routing_key => name)
+
+        client.define_queue(channel, name, options)
+      end
+    end
+
     describe '#queue_size' do
       let(:queue) { mock }
       let(:status) { {:message_count => 42} }
