@@ -51,8 +51,9 @@ describe QueueingRabbit::Client::AMQP do
 
     describe ".connect" do
       before do
-        AMQP.should_receive(:connect).with(QueueingRabbit.amqp_uri).
-                                      and_return(connection)
+        AMQP.should_receive(:connect).
+             with(QueueingRabbit.amqp_uri, subject.connection_options).
+             and_return(connection)
         subject.should_receive(:run_event_machine)
       end
 

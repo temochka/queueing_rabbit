@@ -41,7 +41,7 @@ module QueueingRabbit
       def self.connect
         self.run_event_machine
 
-        self.new(::AMQP.connect(QueueingRabbit.amqp_uri),
+        self.new(::AMQP.connect(QueueingRabbit.amqp_uri, connection_options),
                  QueueingRabbit.amqp_exchange_name,
                  QueueingRabbit.amqp_exchange_options)
       end
