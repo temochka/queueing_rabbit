@@ -47,6 +47,7 @@ describe QueueingRabbit do
                                                     queue_options)
       connection.should_receive(:enqueue).with(channel,
                                                queue_name, arguments)
+      channel.should_receive(:close)
     end
 
     it 'returns true when a message was enqueued successfully' do
@@ -76,6 +77,7 @@ describe QueueingRabbit do
                  with(channel, queue_name, queue_options).
                  and_return(queue)
       connection.should_receive(:queue_size).with(queue).and_return(size)
+      channel.should_receive(:close)
     end
 
     it 'returns queue size for specific job' do
@@ -93,6 +95,7 @@ describe QueueingRabbit do
       connection.should_receive(:define_queue).
                  with(channel, queue_name, queue_options).and_return(queue)
       queue.should_receive(:purge).and_return(true)
+      channel.should_receive(:close)
     end
 
     it 'purges messages from the queue' do

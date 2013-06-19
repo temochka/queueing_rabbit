@@ -19,7 +19,7 @@ module QueueingRabbit
       def open_channel(options = {})
         ch = connection.create_channel
         yield ch, nil
-        # ch.close
+        ch
       end
 
       def define_queue(channel, name, options = {})

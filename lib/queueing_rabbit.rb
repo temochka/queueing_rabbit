@@ -40,6 +40,7 @@ module QueueingRabbit
     connection.open_channel(job.channel_options) do |c, _|
       connection.define_queue(c, job.queue_name, job.queue_options)
       connection.enqueue(c, job.queue_name, arguments)
+      c.close
     end
 
     true
@@ -51,6 +52,7 @@ module QueueingRabbit
     connection.open_channel(job.channel_options) do |c, _|
       queue = connection.define_queue(c, job.queue_name, job.queue_options)
       size = connection.queue_size(queue)
+      c.close
     end
     size
   end
@@ -58,6 +60,7 @@ module QueueingRabbit
   def purge_queue(job)
     connection.open_channel(job.channel_options) do |c, _|
       connection.define_queue(c, job.queue_name, job.queue_options).purge
+      c.close
     end
     true
   end
