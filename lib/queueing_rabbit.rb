@@ -52,7 +52,7 @@ module QueueingRabbit
     conn.open_channel(job.channel_options) do |ch, _|
       conn.define_exchange(ch, job.exchange_name, job.exchange_options) do |ex|
         conn.define_queue(ch, job.queue_name, job.queue_options) do |q|
-          conn.bind_queue(q, ex, job.binding_options)
+          conn.bind_queue(q, ex, job.binding_options) if job.bind_queue?
           yield ch, ex, q if block_given?
         end
       end

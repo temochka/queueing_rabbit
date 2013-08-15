@@ -17,7 +17,8 @@ describe QueueingRabbit do
          :channel_options => channel_options,
          :exchange_name => exchange_name,
          :exchange_options => exchange_options,
-         :binding_options => binding_options)
+         :binding_options => binding_options,
+         :bind_queue? => true)
   }
 
   before(:each) { subject.drop_connection }
