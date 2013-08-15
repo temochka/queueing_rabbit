@@ -6,14 +6,10 @@ module QueueingRabbit
 
     class Bunny
 
-      include QueueingRabbit::Serializer
-
-      attr_reader :connection, :exchange_name, :exchange_options
+      attr_reader :connection
 
       def self.connect
-        self.new(::Bunny.new(QueueingRabbit.amqp_uri),
-                 QueueingRabbit.amqp_exchange_name,
-                 QueueingRabbit.amqp_exchange_options)
+        self.new(::Bunny.new(QueueingRabbit.amqp_uri))
       end
 
       def open_channel(options = {})
@@ -23,27 +19,30 @@ module QueueingRabbit
       end
 
       def define_queue(channel, name, options = {})
-        routing_keys = ([*options.delete(:routing_keys)] + [name]).compact
-
         queue = channel.queue(name.to_s, options)
-
-        routing_keys.each do |key|
-          queue.bind(exchange(channel), :routing_key => key.to_s)
-        end
-
+        yield queue if block_given?
         queue
       end
 
-      def enqueue(channel, routing_key, payload)
-        exchange(channel).publish(serialize(payload), :key => routing_key.to_s,
-                                                      :persistent => true)
+      def bind_queue(queue, exchange, options = {})
+        queue.bind(exchange, options)
+      end
+
+      def enqueue(exchange, payload, options = {})
+        exchange.publish(payload, options)
       end
       alias_method :publish, :enqueue
 
-      def define_exchange(channel, options={})
-        channel.direct(exchange_name, exchange_options.merge(options))
+      def define_exchange(channel = nil, name = '', options = {})
+        type = options.delete(:type)
+
+        exchange = type ? channel.send(type.to_sym, name, options) :
+                          channel.default_exchange
+
+        yield exchange if block_given?
+
+        exchange
       end
-      alias_method :exchange, :define_exchange
 
       def queue_size(queue)
         queue.status[:message_count]
@@ -51,11 +50,8 @@ module QueueingRabbit
 
     private
 
-      def initialize(connection, exchange_name, exchange_options)
+      def initialize(connection)
         @connection = connection
-        @exchange_name = exchange_name
-        @exchange_options = exchange_options
-
         @connection.start
       end
 

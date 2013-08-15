@@ -9,7 +9,6 @@ require 'rspec'
 require 'rspec/autorun'
 require 'evented-spec'
 require 'support/shared_contexts'
-require 'support/shared_examples'
 
 require 'queueing_rabbit'
 

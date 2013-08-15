@@ -29,23 +29,37 @@ module QueueingRabbit
   def connection
     @connection ||= connect
   end
+  alias_method :conn, :connection
 
   def drop_connection
     @connection = nil
   end
 
-  def enqueue(job, arguments = {})
-    info "enqueueing job #{job} with arguments: #{arguments.inspect}."
+  def enqueue(job, payload = nil, options = {})
+    if payload.respond_to?(:to_s)
+      info "enqueueing job #{job} with payload: #{payload}"
+    end
 
-    connection.open_channel(job.channel_options) do |c, _|
-      connection.define_queue(c, job.queue_name, job.queue_options)
-      connection.enqueue(c, job.queue_name, arguments)
-      c.close
+    follow_job_requirements(job) do |_, exchange, _|
+      conn.enqueue(exchange, payload, options)
     end
 
     true
   end
   alias_method :publish, :enqueue
+
+  def follow_job_requirements(job)
+    conn.open_channel(job.channel_options) do |ch, _|
+      conn.define_exchange(ch, job.exchange_name, job.exchange_options) do |ex|
+        conn.define_queue(ch, job.queue_name, job.queue_options) do |q|
+          conn.bind_queue(q, ex, job.binding_options)
+          yield ch, ex, q if block_given?
+        end
+      end
+
+      ch.close
+    end
+  end
 
   def queue_size(job)
     size = 0

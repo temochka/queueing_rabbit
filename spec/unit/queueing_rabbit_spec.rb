@@ -5,17 +5,20 @@ describe QueueingRabbit do
 
   let(:connection) { mock }
   let(:queue_name) { mock }
-  let(:queue_options) { { :durable => true} }
+  let(:queue_options) { {:durable => true} }
   let(:channel) { mock }
-  let(:channel_options) { { :prefetch => 1, :auto_recovery => true } }
-  let(:job) do
-    qname, qopts, copts = queue_name, queue_options, channel_options
-    Class.new do
-      extend QueueingRabbit::Job
-      queue qname, qopts
-      channel copts
-    end
-  end
+  let(:channel_options) { {:prefetch => 1, :auto_recovery => true} }
+  let(:exchange_name) { mock }
+  let(:exchange_options) { {:type => :direct, :durable => true} }
+  let(:binding_options) { {:key => 'routing_key'} }
+  let(:job) {
+    stub(:queue_name => queue_name,
+         :queue_options => queue_options,
+         :channel_options => channel_options,
+         :exchange_name => exchange_name,
+         :exchange_options => exchange_options,
+         :binding_options => binding_options)
+  }
 
   before(:each) { subject.drop_connection }
 
@@ -33,34 +36,59 @@ describe QueueingRabbit do
 
     its(:connect) { should == connection }
     its(:connection) { should == connection }
+    its(:conn) { should == connection }
   end
 
   describe ".enqueue" do
-    let(:arguments) { mock }
+    let(:payload) { mock(:to_s => 'payload') }
+    let(:options) { mock }
+    let(:exchange) { mock }
 
     before do
       subject.instance_variable_set(:@connection, connection)
-      connection.should_receive(:open_channel).with(channel_options).
-                 and_yield(channel, nil)
-      connection.should_receive(:define_queue).with(channel,
-                                                    queue_name,
-                                                    queue_options)
-      connection.should_receive(:enqueue).with(channel,
-                                               queue_name, arguments)
-      channel.should_receive(:close)
+      subject.should_receive(:follow_job_requirements).
+              with(job).
+              and_yield(nil, exchange, nil)
+      connection.should_receive(:enqueue).with(exchange, payload, options)
     end
 
     it 'returns true when a message was enqueued successfully' do
-      subject.enqueue(job, arguments).should be_true
+      subject.enqueue(job, payload, options).should be_true
     end
 
-    context 'logging' do
-      before do
-        subject.should_receive(:info).and_return(nil)
-      end
+    it 'keeps the record of enqueued job at info level' do
+      subject.should_receive(:info).and_return(nil)
+      subject.enqueue(job, payload, options).should be_true
+    end
+  end
 
-      it 'keeps the record of enqueued job at info level' do
-        subject.enqueue(job, arguments).should be_true
+  describe '.follow_job_requirements' do
+    let(:channel) { mock }
+    let(:exchange) { mock }
+    let(:queue) { mock }
+
+    before do
+      subject.instance_variable_set(:@connection, connection)
+    end
+
+    it 'opens a channel, defines an exchange and a queue, binds the queue to ' \
+       'the exchange, yields and then closes the channel' do
+      connection.should_receive(:open_channel).with(job.channel_options).
+                                        and_yield(channel, nil)
+      connection.should_receive(:define_exchange).
+                 with(channel, job.exchange_name, job.exchange_options).
+                 and_yield(exchange)
+      connection.should_receive(:define_queue).
+                 with(channel, job.queue_name, job.queue_options).
+                 and_yield(queue)
+      connection.should_receive(:bind_queue).
+                 with(queue, exchange, job.binding_options)
+      channel.should_receive(:close)
+
+      subject.follow_job_requirements(job) do |ch, ex, q|
+        ch.should == channel
+        ex.should == exchange
+        q.should == q
       end
     end
   end

@@ -6,12 +6,11 @@ module QueueingRabbit
 
     class AMQP
 
-      include QueueingRabbit::Serializer
       include QueueingRabbit::Logging
       extend  QueueingRabbit::Logging
       extend  QueueingRabbit::Client::Callbacks
 
-      attr_reader :connection, :exchange_name, :exchange_options
+      attr_reader :connection
 
       define_callback :on_tcp_failure do |_|
         fatal "unable to establish TCP connection to broker"
@@ -39,24 +38,33 @@ module QueueingRabbit
       end
 
       def self.connect
-        self.run_event_machine
+        self.ensure_event_machine_is_running
 
-        self.new(::AMQP.connect(QueueingRabbit.amqp_uri, connection_options),
-                 QueueingRabbit.amqp_exchange_name,
-                 QueueingRabbit.amqp_exchange_options)
+        self.new(::AMQP.connect(QueueingRabbit.amqp_uri, connection_options))
+      end
+
+      def self.ensure_event_machine_is_running
+        run_event_machine unless EM.reactor_running?
       end
 
       def self.run_event_machine
-        return if EM.reactor_running?
-
         @event_machine_thread = Thread.new do
           EM.run do
             QueueingRabbit.trigger_event(:event_machine_started)
           end
         end
 
-        # Block the control process while EM is starting up
-        sleep 0.5
+        wait_for_event_machine_to_start
+      end
+
+      def self.wait_for_event_machine_to_start
+        Timeout.timeout(5) do
+          sleep 0.5 until EM.reactor_running?
+        end
+      rescue Timeout::Error => e
+        description = "wait timeout exceeded while starting up EventMachine"
+        fatal description
+        raise QueueingRabbitError.new(description)
       end
 
       def self.join_event_machine_thread
@@ -74,54 +82,53 @@ module QueueingRabbit
       end
 
       def define_queue(channel, queue_name, options={})
-        routing_keys = [*options.delete(:routing_keys)] + [queue_name]
-
         channel.queue(queue_name.to_s, options) do |queue|
-          routing_keys.each do |key|
-            queue.bind(exchange(channel), :routing_key => key.to_s)
-          end
+          yield queue if block_given?
         end
       end
 
-      def listen_queue(channel, queue_name, options={}, &block)
-        define_queue(channel, queue_name, options).
-            subscribe(:ack => true) do |metadata, payload|
-          begin
-            process_message(deserialize(payload), &block)
-            metadata.ack
-          rescue JSON::JSONError => e
-            error "JSON parser error occured: #{e.message}"
-            debug e
-          end
+      def bind_queue(queue, exchange, options = {})
+        queue.bind(exchange, options)
+      end
+
+      def listen_queue(queue, options = {}, &block)
+        queue.subscribe(options) do |metadata, payload|
+          process_message(payload, metadata, &block)
         end
       end
 
-      def process_message(arguments)
+      def process_message(payload, metadata)
         begin
-          yield arguments
+          yield payload, metadata
         rescue => e
           error "unexpected error #{e.class} occured: #{e.message}"
           debug e
         end
       end
 
-      def open_channel(options={})
-        ::AMQP::Channel.new(connection,
-                          ::AMQP::Channel.next_channel_id,
-                          options) do |c, open_ok|
+      def open_channel(options = {})
+        channel_id = ::AMQP::Channel.next_channel_id
+        ::AMQP::Channel.new(connection, channel_id, options) do |c, open_ok|
           c.on_error(&self.class.callback(:on_channel_error))
           yield c, open_ok
         end
       end
 
-      def define_exchange(channel, options={})
-        channel.direct(exchange_name, exchange_options.merge(options))
-      end
-      alias_method :exchange, :define_exchange
+      def define_exchange(channel, name = '', options = {})
+        type = options.delete(:type)
+        with_exchange = Proc.new do |exchange, _|
+          yield exchange if block_given?
+        end
 
-      def enqueue(channel, routing_key, payload)
-        exchange(channel).publish(serialize(payload), :key => routing_key.to_s,
-                                                      :persistent => true)
+        if type && type != :default
+          channel.send(type.to_sym, name, options, &with_exchange)
+        else
+          channel.default_exchange.tap(&with_exchange)
+        end
+      end
+
+      def enqueue(exchange, payload, options = {})
+        exchange.publish(payload, options)
       end
       alias_method :publish, :enqueue
 
@@ -136,10 +143,8 @@ module QueueingRabbit
         connection.on_recovery(&self.class.callback(:on_tcp_recovery))
       end
 
-      def initialize(connection, exchange_name, exchange_options = {})
+      def initialize(connection)
         @connection = connection
-        @exchange_name = exchange_name
-        @exchange_options = exchange_options
 
         setup_callbacks
       end

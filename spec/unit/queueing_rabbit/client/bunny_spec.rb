@@ -32,8 +32,6 @@ describe QueueingRabbit::Client::Bunny do
       Bunny.stub(:new => connection)
     end
 
-    it_behaves_like :client
-
     it { should be }
 
     describe '#open_channel' do
@@ -54,16 +52,22 @@ describe QueueingRabbit::Client::Bunny do
     describe '#define_queue' do
       let(:channel) { mock }
       let(:queue) { mock }
-      let(:exchange) { mock }
       let(:name) { 'queue_name_test' }
       let(:options) { {:foo => 'bar'} }
 
       it 'creates a queue and binds it to the global exchange' do
         channel.should_receive(:queue).with(name, options).and_return(queue)
-        client.should_receive(:exchange).with(channel).and_return(exchange)
-        queue.should_receive(:bind).with(exchange, :routing_key => name)
+        client.define_queue(channel, name, options).should == queue
+      end
 
-        client.define_queue(channel, name, options)
+      context 'when block is given' do
+        it 'yields the created queue' do
+          channel.should_receive(:queue).with(name, options).and_return(queue)
+
+          client.define_queue(channel, name, options) do |q|
+            q.should == queue
+          end
+        end
       end
     end
 
@@ -77,6 +81,46 @@ describe QueueingRabbit::Client::Bunny do
 
       it "returns a number of messages in queue" do
         client.queue_size(queue).should be_a(Fixnum)
+      end
+    end
+
+    describe '#define_exchange' do
+      context 'when only channel is given' do
+        let(:channel) { mock }
+        let(:default_exchange) { mock }
+
+        before do
+          channel.should_receive(:default_exchange).
+                  and_return(default_exchange)
+        end
+
+        it 'returns the default exchange' do
+          client.define_exchange(channel).should == default_exchange
+        end
+      end
+
+      context 'with arguments and type' do
+        let(:channel) { mock }
+        let(:name) { 'some_exchange_name' }
+        let(:options) { {:type => 'direct'} }
+        let(:exchange) { mock }
+
+        it 'creates an exchange of given type and options' do
+          channel.should_receive(:direct).with(name, options).
+                                          and_return(exchange)
+          client.define_exchange(channel, name, options).should == exchange
+        end
+      end
+    end
+
+    describe '#enqueue' do
+      let(:exchange) { mock }
+      let(:payload) { mock }
+      let(:options) { mock }
+
+      it "publishes a new message to given exchange with given options" do
+        exchange.should_receive(:publish).with(payload, options)
+        client.enqueue(exchange, payload, options)
       end
     end
 
