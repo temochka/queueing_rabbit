@@ -40,8 +40,9 @@ module QueueingRabbit
       info "enqueueing job #{job} with payload: #{payload}"
     end
 
-    follow_job_requirements(job) do |_, exchange, _|
+    follow_job_requirements(job) do |channel, exchange, _|
       conn.enqueue(exchange, payload, options)
+      channel.close
     end
 
     true
@@ -56,8 +57,6 @@ module QueueingRabbit
           yield ch, ex, q if block_given?
         end
       end
-
-      ch.close
     end
   end
 

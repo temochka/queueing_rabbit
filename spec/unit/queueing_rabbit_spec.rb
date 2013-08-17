@@ -44,13 +44,15 @@ describe QueueingRabbit do
     let(:payload) { mock(:to_s => 'payload') }
     let(:options) { mock }
     let(:exchange) { mock }
+    let(:channel) { mock }
 
     before do
       subject.instance_variable_set(:@connection, connection)
       subject.should_receive(:follow_job_requirements).
               with(job).
-              and_yield(nil, exchange, nil)
+              and_yield(channel, exchange, nil)
       connection.should_receive(:enqueue).with(exchange, payload, options)
+      channel.should_receive(:close)
     end
 
     it 'returns true when a message was enqueued successfully' do
@@ -73,7 +75,7 @@ describe QueueingRabbit do
     end
 
     it 'opens a channel, defines an exchange and a queue, binds the queue to ' \
-       'the exchange, yields and then closes the channel' do
+       'the exchange, yields' do
       connection.should_receive(:open_channel).with(job.channel_options).
                                         and_yield(channel, nil)
       connection.should_receive(:define_exchange).
@@ -84,7 +86,6 @@ describe QueueingRabbit do
                  and_yield(queue)
       connection.should_receive(:bind_queue).
                  with(queue, exchange, job.binding_options)
-      channel.should_receive(:close)
 
       subject.follow_job_requirements(job) do |ch, ex, q|
         ch.should == channel
