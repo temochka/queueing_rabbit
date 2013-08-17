@@ -60,7 +60,7 @@ describe QueueingRabbit::AbstractJob do
   context 'instance methods' do
     let(:payload) { mock }
     let(:headers) { mock }
-    let(:metadata) { stub(headers: headers) }
+    let(:metadata) { stub(:headers => headers) }
 
     subject { job_class.new(payload, metadata) }
 
@@ -124,7 +124,7 @@ describe QueueingRabbit::JobExtensions::Retryable do
   }
   let(:payload) { mock }
   let(:headers) { {:qr_retries => 2} }
-  let(:metadata) { mock(headers: headers)}
+  let(:metadata) { mock(:headers => headers)}
 
   subject { test_job.new(payload, metadata) }
 
@@ -136,7 +136,8 @@ describe QueueingRabbit::JobExtensions::Retryable do
     end
 
     it 'retries with increased number of attempts' do
-      test_job.should_receive(:enqueue).with(payload, headers: {:qr_retries => 3}).and_return(true)
+      test_job.should_receive(:enqueue).
+               with(payload, :headers => {:qr_retries => 3}).and_return(true)
       subject.retry_upto(3).should be_true
     end
   end
