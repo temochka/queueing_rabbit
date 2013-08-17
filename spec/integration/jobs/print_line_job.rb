@@ -1,17 +1,11 @@
-class PrintLineJob
-  extend QueueingRabbit::Job
-
+class PrintLineJob < QueueingRabbit::AbstractJob
   class << self
-    attr_writer :io
+    attr_accessor :io
   end
 
-  queue :print_line_job, :durable => true
+  queue :print_line_job
 
-  def self.perform(arguments = {})
-    self.io.puts arguments[:line]
-  end
-
-  def self.io
-    @io ||= STDOUT
+  def perform
+    self.class.io.puts payload
   end
 end

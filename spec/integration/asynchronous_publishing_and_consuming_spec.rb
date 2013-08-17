@@ -5,42 +5,60 @@ describe "Asynchronous publishing and consuming example" do
   include_context "Evented spec"
   include_context "StringIO logger"
 
-  let(:job) { PrintLineJob }
-
   before(:all) { QueueingRabbit.client = QueueingRabbit::Client::AMQP }
   after(:all) { QueueingRabbit.client = QueueingRabbit.default_client }
 
   context "basic consuming" do
-    let(:connection) { QueueingRabbit.connection }
-    let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
-    let(:io) { StringIO.new }
     let(:line) { "Hello, world!" }
+    let(:connection) { QueueingRabbit.connection }
+    let(:job) { PrintLineJob }
+    let(:io) { StringIO.new }
+    let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
 
     before(:each) do
       QueueingRabbit.drop_connection
-      PrintLineJob.io = io
+    end
+
+    before do
+      job.io = io
     end
 
     it "processes enqueued jobs" do
       em {
         QueueingRabbit.connect
-        queue_size = nil
+        @queue_size = nil
 
-        delayed(0.5) {
-          3.times { QueueingRabbit.enqueue(job, :line => line) }
-        }
-
-        delayed(1.0) { worker.work }
-
-        delayed(2.0) {
+        def request_queue_size
           connection.open_channel do |c, _|
-            connection.define_queue(c, :print_line_job, job.queue_options).status do |s, _|
-              queue_size = s
+            connection.define_queue(c, job.queue_name, job.queue_options).status do |s, _|
+              @queue_size = s
             end
           end
+        end
+
+        delayed(0.5) {
+          3.times { job.enqueue(line) }
         }
 
-        done(3.0) { queue_size.should == 0 }
+        delayed(1.5) {
+          request_queue_size
+        }
+
+        delayed(2.0) {
+          @queue_size.should == 3
+        }
+
+        delayed(2.5) {
+          worker.work
+        }
+
+        delayed(3.5) {
+          request_queue_size
+        }
+
+        done(4.0) {
+          @queue_size.should be_zero
+        }
       }
     end
 
@@ -48,9 +66,11 @@ describe "Asynchronous publishing and consuming example" do
       em {
         QueueingRabbit.connect
 
-        delayed(0.5) { QueueingRabbit.enqueue(job, :line => line) }
+        delayed(0.5) { job.enqueue(line) }
 
-        delayed(1.0) { worker.work }
+        delayed(1.0) {
+          worker.work
+        }
 
         done(2.0) {
           io.string.should include(line)

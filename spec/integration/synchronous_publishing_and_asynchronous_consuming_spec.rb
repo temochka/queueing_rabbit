@@ -10,29 +10,25 @@ describe "Synchronous publishing and asynchronous consuming example" do
 
   after(:all) { QueueingRabbit.client = QueueingRabbit.default_client }
 
-  context "when a message is published synchronously" do
+  context "when a message is published synchronously and being consumed " \
+          "asynchornously" do
+    let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
+    let(:io) { StringIO.new }
+
     before do
-      QueueingRabbit.publish(job, :line => line)
+      job.io = io
+      job.enqueue(line)
       QueueingRabbit.drop_connection
     end
 
-    context "and being consumed asynchornously" do
-      let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
-      let(:io) { StringIO.new }
+    it "works" do
+      em {
+        worker.work
 
-      before do
-        job.io = io
-      end
-
-      it "works" do
-        em {
-          worker.work
-
-          done(1.0) {
-            io.string.should include(line)
-          }
+        done(1.0) {
+          io.string.should include(line)
         }
-      end
+      }
     end
   end
 

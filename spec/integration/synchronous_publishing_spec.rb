@@ -6,17 +6,21 @@ describe "Synchronous publishing example" do
 
   let(:job) { PrintLineJob }
 
+  before do
+    job.io = StringIO.new
+  end
+
   context "when publishing a message" do
     after do
       QueueingRabbit.purge_queue(job)
     end
 
     let(:publishing) {
-      lambda { QueueingRabbit.publish(job, :line => "Hello, World!") }
+      Proc.new { job.enqueue("Hello, World!") }
     }
 
     it 'affects the queue size' do
-      expect { 5.times { publishing.call } }.
+      expect { 5.times(&publishing) }.
              to change{QueueingRabbit.queue_size(job)}.by(5)
     end
   end
