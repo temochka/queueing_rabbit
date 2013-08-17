@@ -5,7 +5,7 @@ describe QueueingRabbit::AbstractJob do
     Class.new(QueueingRabbit::AbstractJob) do
       queue 'test_queue', :durable => true
       exchange 'test_exchange', :durable => false
-      bind :key => 'test.*'
+      bind :routing_key => 'test.*'
     end
   }
 
@@ -27,7 +27,7 @@ describe QueueingRabbit::AbstractJob do
   its(:queue_name) { should == 'test_queue' }
   its(:queue_options) { should include(:durable => true) }
   its(:exchange_options) { should include(:durable => false) }
-  its(:binding_options) { should include(:key => 'test.*') }
+  its(:binding_options) { should include(:routing_key => 'test.*') }
 
   describe ".queue_size" do
     let(:size) { mock }
@@ -97,7 +97,7 @@ describe QueueingRabbit::JobExtensions::DirectExchange do
 
   its(:exchange_name) { should == 'test_job' }
   its(:exchange_options) { should include(:type => :direct) }
-  its(:binding_options) { should include(:key => 'test_queue') }
+  its(:binding_options) { should include(:routing_key => 'test_queue') }
 end
 
 describe QueueingRabbit::JobExtensions::Retryable do
