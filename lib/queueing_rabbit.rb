@@ -36,9 +36,7 @@ module QueueingRabbit
   end
 
   def enqueue(job, payload = nil, options = {})
-    if payload.respond_to?(:to_s)
-      info "enqueueing job #{job} with payload: #{payload}"
-    end
+    info "enqueueing job #{job}"
 
     follow_job_requirements(job) do |channel, exchange, _|
       conn.enqueue(exchange, payload, options)
