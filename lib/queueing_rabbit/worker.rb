@@ -69,11 +69,21 @@ module QueueingRabbit
     end
 
     def run_job(conn, job)
-      conn.open_channel(job.channel_options) do |channel, _|
-        conn.listen_queue(channel, job.queue_name, job.queue_options) do |args|
-          info "performing job #{job} with arguments #{args.inspect}"
-          job.perform(args)
+      QueueingRabbit.follow_job_requirements(job) do |_, _, queue|
+        conn.listen_queue(queue, job.listening_options) do |payload, metadata|
+          info "performing job #{job}"
+          invoke_job(job, payload, metadata)
         end
+      end
+    end
+
+    def invoke_job(job, payload, metadata)
+      if job.respond_to?(:perform)
+        job.perform(payload, metadata)
+      elsif job <= QueueingRabbit::AbstractJob
+        job.new(payload, metadata).perform
+      else
+        error "do not know how to perform job #{job}"
       end
     end
 

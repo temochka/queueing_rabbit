@@ -4,17 +4,23 @@ describe QueueingRabbit::Worker do
   include_context "StringIO logger"
 
   subject { QueueingRabbit::Worker }
-  let!(:job) {
-    class QueueingRabbitTestJob < QueueingRabbit::AbstractJob
-      def self.perform(arguments = {}); end
+  let(:class_based_job) {
+    Class.new(QueueingRabbit::AbstractJob) do
+      def self.perform(payload, metadata); end
     end
   }
+  let(:instance_based_job) { Class.new(QueueingRabbit::AbstractJob) }
   let(:creation) {
-    Proc.new { QueueingRabbit::Worker.new('QueueingRabbitTestJob') }
+    Proc.new do
+      QueueingRabbit::Worker.new('QueueingRabbitClassJob', QueueingRabbitInstanceJob)
+    end
   }
-  let(:worker) {
-    creation.call
-  }
+  let(:worker) { creation.call }
+
+  before do
+    stub_const("QueueingRabbitClassJob", class_based_job)
+    stub_const("QueueingRabbitInstanceJob", instance_based_job)
+  end
 
   after(:each) do
     QueueingRabbit.client = QueueingRabbit::Client::Bunny
@@ -60,38 +66,42 @@ describe QueueingRabbit::Worker do
 
   context 'instance methods' do
     let(:connection) { mock }
-    let(:channel) { mock }
-    let(:arguments) { mock }
+    let(:queue) { mock }
+    let(:payload) { mock }
+    let(:metadata) { mock }
 
     subject { worker }
 
     describe '#work' do
       before do
         QueueingRabbit.should_receive(:connection).and_return(connection)
-        connection.should_receive(:open_channel).and_yield(channel, nil)
-        connection.should_receive(:listen_queue).and_yield(arguments)
+        [class_based_job, instance_based_job].each do |job|
+          QueueingRabbit.should_receive(:follow_job_requirements).
+                         with(job).
+                         and_yield(nil, nil, queue)
+          connection.should_receive(:listen_queue).
+                     with(queue, job.listening_options).
+                     and_yield(payload, metadata)
+        end
+
+        class_based_job.should_receive(:perform).with(payload, metadata)
+        instance_based_job.should_receive(:new).
+                           with(payload, metadata).
+                           and_return(mock(:perform => nil))
       end
 
       it 'listens to queues specified by jobs' do
         subject.work
       end
 
-      context "logging" do
-        before do
-          subject.should_receive(:info)
-        end
-
-        it 'writes to the log' do
-          subject.work
-        end
+      it 'writes to the log' do
+        subject.should_receive(:info).twice
+        subject.work
       end
 
       describe '#work!' do
-        before do
-          EM.should_receive(:run).and_yield
-        end
-
         it 'runs #work and joins the eventmachine thread' do
+          EM.should_receive(:run).and_yield
           subject.work!
         end
       end
