@@ -23,11 +23,17 @@ describe QueueingRabbit::AbstractJob do
   it { should respond_to(:channel).with(1).argument }
   it { should respond_to(:enqueue).with(1).argument }
   it { should respond_to(:enqueue).with(2).arguments }
+  it { should respond_to(:listening_options) }
+  it { should respond_to(:listen) }
+  it { should respond_to(:listen).with(1).argument }
+  it { should respond_to(:publishing_defaults) }
+  it { should respond_to(:publishing_defaults).with(1).argument }
 
   its(:queue_name) { should == 'test_queue' }
   its(:queue_options) { should include(:durable => true) }
   its(:exchange_options) { should include(:durable => false) }
   its(:binding_options) { should include(:routing_key => 'test.*') }
+  its(:publishing_defaults) { should include(:routing_key => 'test_queue') }
 
   describe ".queue_size" do
     let(:size) { mock }
@@ -41,10 +47,12 @@ describe QueueingRabbit::AbstractJob do
 
   describe '.enqueue' do
     let(:payload) { mock }
-    let(:options) { mock }
+    let(:options) { {:persistent => true} }
+    let(:result_options) { options.merge(job_class.publishing_defaults) }
 
     it 'enqueues a job of its own type with given argument' do
-      QueueingRabbit.should_receive(:enqueue).with(subject, payload, options)
+      QueueingRabbit.should_receive(:enqueue).
+                     with(subject, payload, result_options)
       subject.enqueue(payload, options)
     end
   end
@@ -74,10 +82,12 @@ describe QueueingRabbit::JSONJob do
   its(:payload) { should include(:foo => 'bar') }
 
   describe '.enqueue' do
-    let(:options) { mock }
+    let(:options) { {:persistent => true} }
+    let(:result_options) { options.merge(:routing_key => 'JSONJob') }
 
     it 'dumps payload to JSON' do
-      QueueingRabbit.should_receive(:enqueue).with(json_job, payload, options)
+      QueueingRabbit.should_receive(:enqueue).
+                     with(json_job, payload, result_options)
       json_job.enqueue({:foo => 'bar'}, options)
     end
   end

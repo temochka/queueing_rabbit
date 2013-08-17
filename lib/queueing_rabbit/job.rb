@@ -54,9 +54,22 @@ module QueueingRabbit
       exchange_options[:type] && exchange_options[:type] != :default && binding_options
     end
 
-    def enqueue(payload, options = {})
-      QueueingRabbit.enqueue(self, payload, options)
+    def listening_options
+      @listening_options || {}
     end
+
+    def listen(options = {})
+      @listening_options = options
+    end
+
+    def publishing_defaults(options = {})
+      @publishing_defaults ||= options.merge(:routing_key => queue_name.to_s)
+    end
+
+    def enqueue(payload, options = {})
+      QueueingRabbit.enqueue(self, payload, publishing_defaults.merge(options))
+    end
+    alias_method :publish, :enqueue
   end
 
   module JobExtensions
