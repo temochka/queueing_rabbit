@@ -1,12 +1,19 @@
 module QueueingRabbit
 
-  module Extensions
+  module JobExtensions
 
     module NewRelic
 
-      def self.included(mod)
-        mod.class_eval do |klass|
-          class << klass
+      def self.included(klass)
+        if klass.respond_to?(:perform)
+          klass.class_eval do |k|
+            class << k
+              include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
+              add_transaction_tracer :perform, :category => :task
+            end
+          end
+        else
+          klass.class_eval do |k|
             include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
             add_transaction_tracer :perform, :category => :task
           end
