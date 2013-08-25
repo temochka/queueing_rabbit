@@ -109,6 +109,7 @@ module QueueingRabbit
       def open_channel(options = {})
         channel_id = ::AMQP::Channel.next_channel_id
         ::AMQP::Channel.new(connection, channel_id, options) do |c, open_ok|
+          c.confirm_select if !!options[:use_publisher_confirms]
           c.on_error(&self.class.callback(:on_channel_error))
           yield c, open_ok
         end

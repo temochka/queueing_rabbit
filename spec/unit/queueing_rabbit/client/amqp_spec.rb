@@ -184,7 +184,7 @@ describe QueueingRabbit::Client::AMQP do
 
     describe "#open_channel" do
       let(:next_channel_id) { mock }
-      let(:options) { mock }
+      let(:options) { {:use_publisher_confirms => true} }
       let(:channel) { mock }
       let(:open_ok) { mock }
 
@@ -195,6 +195,7 @@ describe QueueingRabbit::Client::AMQP do
                       with(connection, next_channel_id, options).
                       and_yield(channel, open_ok)
         channel.should_receive(:on_error)
+        channel.should_receive(:confirm_select)
       end
 
       it 'opens a new AMQP channel with given options and installs ' \
