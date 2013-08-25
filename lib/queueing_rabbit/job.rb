@@ -72,38 +72,6 @@ module QueueingRabbit
     alias_method :publish, :enqueue
   end
 
-  module JobExtensions
-    module DirectExchange
-      def self.included(klass)
-        klass.extend ClassMethods
-      end
-
-      module ClassMethods
-        def exchange_options
-          @exchange_options ||= {}
-          @exchange_options.update(:type => :direct)
-        end
-
-        def binding_options
-          @binding_options || {:routing_key => queue_name.to_s}
-        end
-      end
-    end
-
-    module Retryable
-      def retries
-        headers[:qr_retries].to_i
-      end
-
-      def retry_upto(max_retries)
-        if retries < max_retries
-          updated_headers = headers.update(:qr_retries => retries + 1)
-          self.class.enqueue(payload, :headers => updated_headers)
-        end
-      end
-    end
-  end
-
   class AbstractJob
     extend Job
     attr_reader :payload, :metadata

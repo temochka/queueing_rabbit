@@ -7,6 +7,8 @@ require "queueing_rabbit/client/callbacks"
 require "queueing_rabbit/client/amqp"
 require "queueing_rabbit/client/bunny"
 require "queueing_rabbit/extensions/new_relic"
+require "queueing_rabbit/extensions/retryable"
+require "queueing_rabbit/extensions/direct_exchange"
 require "queueing_rabbit/job"
 require "queueing_rabbit/worker"
 
