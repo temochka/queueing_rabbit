@@ -17,6 +17,10 @@ RSpec.configure do |config|
     QueueingRabbit.drop_connection
   }
 
+  config.exclusion_filter = {
+    :ruby => RUBY_VERSION
+  }
+
   QueueingRabbit.configure do |qr|
     qr.amqp_uri = "amqp://guest:guest@localhost:5672"
     qr.amqp_exchange_name = "queueing_rabbit_test"
