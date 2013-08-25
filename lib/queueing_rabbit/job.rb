@@ -85,7 +85,7 @@ module QueueingRabbit
         end
 
         def binding_options
-          @binding_options || {:routing_key => queue_name}
+          @binding_options || {:routing_key => queue_name.to_s}
         end
       end
     end
