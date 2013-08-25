@@ -1,4 +1,5 @@
 module QueueingRabbit
+
   module Job
 
     def queue(*args)
@@ -70,40 +71,7 @@ module QueueingRabbit
       QueueingRabbit.enqueue(self, payload, publishing_defaults.merge(options))
     end
     alias_method :publish, :enqueue
+
   end
 
-  class AbstractJob
-    extend Job
-    attr_reader :payload, :metadata
-
-    def initialize(payload, metadata)
-      @payload = payload
-      @metadata = metadata
-    end
-
-    def acknowledge
-      metadata.ack
-    end
-
-    def headers
-      metadata.headers
-    end
-
-    def perform
-    end
-  end
-
-  class JSONJob < AbstractJob
-    extend QueueingRabbit::Serializer
-
-    alias_method :arguments, :payload
-
-    def self.enqueue(payload, metadata = {})
-      super serialize(payload), metadata
-    end
-
-    def initialize(payload, metadata = {})
-      super self.class.deserialize(payload), metadata
-    end
-  end
 end
