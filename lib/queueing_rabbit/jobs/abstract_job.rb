@@ -16,7 +16,7 @@ module QueueingRabbit
     end
 
     def headers
-      metadata.headers
+      metadata.headers || {}
     end
 
     def perform
