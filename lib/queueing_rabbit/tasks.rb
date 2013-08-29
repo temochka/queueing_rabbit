@@ -16,7 +16,7 @@ namespace :queueing_rabbit do
 
     begin
       worker = QueueingRabbit::Worker.new(*jobs)
-    rescue QueueingRabbit::NoJobError
+    rescue QueueingRabbit::JobNotPresentError, QueueingRabbit::JobNotFoundError
       abort "set JOB env var, e.g. $ JOB=ExportDataJob,CompressFileJob " \
             "rake queueing_rabbit:work"
     end
