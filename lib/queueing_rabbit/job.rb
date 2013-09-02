@@ -11,7 +11,7 @@ module QueueingRabbit
     end
 
     def queue_name
-      @queue_name ||= self.name.split('::')[-1]
+      @queue_name ||= (self.name.split('::')[-1] if self.name)
     end
 
     def queue_options
