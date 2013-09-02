@@ -15,7 +15,7 @@ describe "Persistent asynchronous publishing and consuming" do
       Class.new(PrintLineJob) do
         queue 'persistent_print_line_job'
         listen :ack => true
-        publishing_defaults :persistent => true
+        publish :persistent => true
         channel :use_publisher_confirms => true
 
         def perform

@@ -27,7 +27,6 @@ describe QueueingRabbit::AbstractJob do
   it { should respond_to(:listen) }
   it { should respond_to(:listen).with(1).argument }
   it { should respond_to(:publishing_defaults) }
-  it { should respond_to(:publishing_defaults).with(1).argument }
 
   its(:queue_name) { should == 'test_queue' }
   its(:queue_options) { should include(:durable => true) }
