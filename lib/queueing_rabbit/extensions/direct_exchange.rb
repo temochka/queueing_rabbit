@@ -11,7 +11,7 @@ module QueueingRabbit
       module ClassMethods
         def exchange_options
           @exchange_options ||= {}
-          @exchange_options.update(:type => :direct)
+          @exchange_options.merge(:type => :direct)
         end
 
         def binding_options
