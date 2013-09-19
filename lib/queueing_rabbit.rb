@@ -1,4 +1,5 @@
 require "queueing_rabbit/version"
+require "queueing_rabbit/misc/inheritable_class_variables"
 require "queueing_rabbit/callbacks"
 require "queueing_rabbit/configuration"
 require "queueing_rabbit/logging"
