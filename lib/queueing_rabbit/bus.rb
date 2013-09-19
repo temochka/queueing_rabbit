@@ -21,15 +21,9 @@ module QueueingRabbit
 
     def exchange(*args)
       @exchange_options ||= {}
-      if args.first.kind_of?(Hash)
-        @exchange_options.update(args.first)
-      elsif args.count > 1
-        name, options = args
-        @exchange_name = name
-        @exchange_options.update(options)
-      else
-        @exchange_name = args.first
-      end
+      name, options = extract_name_and_options(*args)
+      @exchange_name = name if name
+      @exchange_options.update(options) if options
     end
 
     def exchange_name
@@ -51,6 +45,20 @@ module QueueingRabbit
 
     def publish(payload, options = {})
       QueueingRabbit.publish(self, payload, publishing_defaults.merge(options))
+    end
+
+    protected
+
+    def extract_name_and_options(*args)
+      name = options = nil
+      if args.first.kind_of?(Hash)
+        options = args.first
+      elsif args.count > 1
+        name, options = args
+      else
+        name = args.first
+      end
+      [name, options]
     end
   end
 

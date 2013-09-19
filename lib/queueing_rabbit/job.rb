@@ -16,15 +16,9 @@ module QueueingRabbit
 
     def queue(*args)
       @queue_options ||= {}
-      if args.first.kind_of?(Hash)
-        @queue_options.update(args.first)
-      elsif args.count > 1
-        name, options = args
-        @queue_name = name
-        @queue_options.update(options)
-      else
-        @queue_name = args.first
-      end
+      name, options = extract_name_and_options(*args)
+      @queue_name = name if name
+      @queue_options.update(options) if options
     end
 
     def queue_name
