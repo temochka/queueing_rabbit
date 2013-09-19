@@ -7,9 +7,7 @@ describe QueueingRabbit::Client::AMQP do
   let(:connection) { mock :on_tcp_connection_loss => nil, :on_recovery => nil }
 
   before do
-    QueueingRabbit.stub(:amqp_uri => 'amqp://localhost:5672',
-                        :amqp_exchange_name => 'queueing_rabbit_test',
-                        :amqp_exchange_options => {:durable => true})
+    QueueingRabbit.stub(:amqp_uri => 'amqp://localhost:5672')
   end
 
   context "class" do

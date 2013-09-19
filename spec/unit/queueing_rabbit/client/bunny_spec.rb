@@ -4,9 +4,7 @@ describe QueueingRabbit::Client::Bunny do
   let(:connection) { stub(:start => true) }
 
   before do
-    QueueingRabbit.stub(:amqp_uri => 'amqp://localhost:5672',
-                        :amqp_exchange_name => 'queueing_rabbit_test',
-                        :amqp_exchange_options => {:durable => true})
+    QueueingRabbit.stub(:amqp_uri => 'amqp://localhost:5672')
   end
 
   context 'class' do
