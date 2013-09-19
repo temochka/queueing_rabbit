@@ -74,13 +74,11 @@ describe QueueingRabbit do
       subject.instance_variable_set(:@connection, connection)
     end
 
-    it 'opens a channel, defines an exchange and a queue, binds the queue to ' \
-       'the exchange, yields' do
-      connection.should_receive(:open_channel).with(job.channel_options).
-                                        and_yield(channel, nil)
-      connection.should_receive(:define_exchange).
-                 with(channel, job.exchange_name, job.exchange_options).
-                 and_yield(exchange)
+    it 'follows bus requirements, creates a queue, binds the queue to ' \
+       'the exchange and yields' do
+      subject.should_receive(:follow_bus_requirements).
+              with(job).
+              and_yield(channel, exchange)
       connection.should_receive(:define_queue).
                  with(channel, job.queue_name, job.queue_options).
                  and_yield(queue)
@@ -91,6 +89,33 @@ describe QueueingRabbit do
         ch.should == channel
         ex.should == exchange
         q.should == q
+      end
+    end
+  end
+
+  describe '.follow_bus_requirements' do
+    let(:channel) { mock }
+    let(:exchange) { mock }
+    let(:bus) {
+      stub(:channel_options => channel_options,
+           :exchange_name => exchange_name,
+           :exchange_options => exchange_options,)
+    }
+
+    before do
+      subject.instance_variable_set(:@connection, connection)
+    end
+
+    it 'opens a channel, defines an exchange and yields' do
+      connection.should_receive(:open_channel).with(bus.channel_options).
+                                        and_yield(channel, nil)
+      connection.should_receive(:define_exchange).
+                 with(channel, bus.exchange_name, bus.exchange_options).
+                 and_yield(exchange)
+
+      subject.follow_bus_requirements(bus) do |ch, ex|
+        ch.should == channel
+        ex.should == exchange
       end
     end
   end

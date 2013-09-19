@@ -49,15 +49,29 @@ module QueueingRabbit
 
     true
   end
-  alias_method :publish, :enqueue
+
+  def publish(bus, payload = nil, options = {})
+    info "publishing to event bus #{bus}"
+
+    follow_bus_requirements(bus) do |ch, ex|
+      conn.enqueue(ex, payload, options)
+      ch.close
+    end
+  end
 
   def follow_job_requirements(job)
-    conn.open_channel(job.channel_options) do |ch, _|
-      conn.define_exchange(ch, job.exchange_name, job.exchange_options) do |ex|
-        conn.define_queue(ch, job.queue_name, job.queue_options) do |q|
-          conn.bind_queue(q, ex, job.binding_options) if job.bind_queue?
-          yield ch, ex, q if block_given?
-        end
+    follow_bus_requirements(job) do |ch, ex|
+      conn.define_queue(ch, job.queue_name, job.queue_options) do |q|
+        conn.bind_queue(q, ex, job.binding_options) if job.bind_queue?
+        yield ch, ex, q
+      end
+    end
+  end
+
+  def follow_bus_requirements(bus)
+    conn.open_channel(bus.channel_options) do |ch, _|
+      conn.define_exchange(ch, bus.exchange_name, bus.exchange_options) do |ex|
+        yield ch, ex
       end
     end
   end
