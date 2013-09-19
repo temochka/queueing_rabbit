@@ -1,7 +1,7 @@
 module QueueingRabbit
 
   module Configuration
-    attr_accessor :amqp_uri, :amqp_exchange_name, :amqp_exchange_options
+    attr_accessor :amqp_uri
     attr_writer :tcp_timeout, :heartbeat
 
     def configure
