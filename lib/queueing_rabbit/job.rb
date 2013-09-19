@@ -1,6 +1,8 @@
 module QueueingRabbit
 
   module Job
+    include Bus
+
     def self.extended(othermod)
       othermod.extend(QueueingRabbit::InheritableClassVariables)
 
@@ -37,36 +39,6 @@ module QueueingRabbit
       QueueingRabbit.queue_size(self)
     end
 
-    def channel(options = {})
-      @channel_options ||= {}
-      @channel_options.update(options)
-    end
-
-    def channel_options
-      @channel_options ||= {}
-    end
-
-    def exchange(*args)
-      @exchange_options ||= {}
-      if args.first.kind_of?(Hash)
-        @exchange_options.update(args.first)
-      elsif args.count > 1
-        name, options = args
-        @exchange_name = name
-        @exchange_options.update(options)
-      else
-        @exchange_name = args.first
-      end
-    end
-
-    def exchange_name
-      @exchange_name || ''
-    end
-
-    def exchange_options
-      @exchange_options || {}
-    end
-
     def bind(options = {})
       @binding_options ||= {}
       @binding_options.update(options)
@@ -89,11 +61,6 @@ module QueueingRabbit
       @listening_options.update(options)
     end
     alias_method :subscribe, :listen
-
-    def publish(options = {})
-      @publishing_defaults ||= {}
-      @publishing_defaults.update(options)
-    end
 
     def publishing_defaults
       @publishing_defaults ||= {}

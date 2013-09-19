@@ -8,7 +8,7 @@ describe 'Configuring jobs' do
         channel :prefetch => 15
         queue :durable => true
         bind :ack => true
-        publish :persistent => true
+        publish_with :persistent => true
       end
     }
 
@@ -35,7 +35,7 @@ describe 'Configuring jobs' do
         channel :prefetch => 15
         queue :durable => true
         bind :ack => true
-        publish :persistent => true
+        publish_with :persistent => true
       end
     }
 
