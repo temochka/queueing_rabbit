@@ -15,6 +15,6 @@ describe QueueingRabbit::JobExtensions::DirectExchange do
 
   its(:exchange_name) { should == 'test_job' }
   its(:exchange_options) { should include(:type => :direct) }
-  its(:binding_options) { should include(:routing_key => 'test_queue') }
+  its(:binding_declarations) { should include(:routing_key => 'test_queue') }
 
 end

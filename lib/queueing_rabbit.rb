@@ -66,7 +66,10 @@ module QueueingRabbit
   def follow_job_requirements(job)
     follow_bus_requirements(job) do |ch, ex|
       conn.define_queue(ch, job.queue_name, job.queue_options) do |q|
-        conn.bind_queue(q, ex, job.binding_options) if job.bind_queue?
+        if job.bind_queue?
+          job.binding_declarations.each { |o| conn.bind_queue(q, ex, o) }
+        end
+
         yield ch, ex, q
       end
     end

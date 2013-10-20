@@ -10,14 +10,16 @@ describe QueueingRabbit do
   let(:channel_options) { {:prefetch => 1, :auto_recovery => true} }
   let(:exchange_name) { mock }
   let(:exchange_options) { {:type => :direct, :durable => true} }
-  let(:binding_options) { {:key => 'routing_key'} }
+  let(:binding_declaration_1) { {:routing_key => 'routing_key'} }
+  let(:binding_declaration_2) { {:routing_key => 'routing_key2'} }
   let(:job) {
     stub(:queue_name => queue_name,
          :queue_options => queue_options,
          :channel_options => channel_options,
          :exchange_name => exchange_name,
          :exchange_options => exchange_options,
-         :binding_options => binding_options,
+         :binding_declarations => [binding_declaration_1, 
+                                   binding_declaration_2],
          :bind_queue? => true)
   }
 
@@ -83,7 +85,9 @@ describe QueueingRabbit do
                  with(channel, job.queue_name, job.queue_options).
                  and_yield(queue)
       connection.should_receive(:bind_queue).
-                 with(queue, exchange, job.binding_options)
+                 with(queue, exchange, binding_declaration_1)
+      connection.should_receive(:bind_queue).
+                 with(queue, exchange, binding_declaration_2)
 
       subject.follow_job_requirements(job) do |ch, ex, q|
         ch.should == channel

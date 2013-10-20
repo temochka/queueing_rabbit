@@ -14,8 +14,9 @@ module QueueingRabbit
           @exchange_options.merge(:type => :direct)
         end
 
-        def binding_options
-          @binding_options || {:routing_key => queue_name.to_s}
+        def binding_declarations
+          @binding_declarations ||= []
+          @binding_declarations.push(:routing_key => queue_name.to_s)
         end
       end
 

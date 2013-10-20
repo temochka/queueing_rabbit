@@ -31,7 +31,7 @@ describe QueueingRabbit::AbstractJob do
   its(:queue_name) { should == 'test_queue' }
   its(:queue_options) { should include(:durable => true) }
   its(:exchange_options) { should include(:durable => false) }
-  its(:binding_options) { should include(:routing_key => 'test.*') }
+  its(:binding_declarations) { should include(:routing_key => 'test.*') }
   its(:publishing_defaults) { should include(:routing_key => 'test_queue') }
 
   describe ".queue_size" do

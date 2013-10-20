@@ -9,7 +9,7 @@ module QueueingRabbit
       othermod.class_eval do
         inheritable_variables :queue_name, :queue_options, :channel_options,
                               :exchange_name, :exchange_options,
-                              :binding_options, :listening_options,
+                              :binding_declarations, :listening_options,
                               :publishing_defaults
       end
     end
@@ -34,16 +34,18 @@ module QueueingRabbit
     end
 
     def bind(options = {})
-      @binding_options ||= {}
-      @binding_options.update(options)
+      @binding_declarations ||= []
+      @binding_declarations << options
     end
 
-    def binding_options
-      @binding_options || nil
+    def binding_declarations
+      @binding_declarations || []
     end
 
     def bind_queue?
-      exchange_options[:type] && exchange_options[:type] != :default && binding_options
+      exchange_options[:type] &&
+          exchange_options[:type] != :default &&
+          !binding_declarations.empty?
     end
 
     def listening_options
