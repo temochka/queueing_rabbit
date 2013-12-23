@@ -35,6 +35,7 @@ module QueueingRabbit
       alias_method :publish, :enqueue
 
       def define_exchange(channel = nil, name = '', options = {})
+        options = options.dup
         type = options.delete(:type)
 
         exchange = type ? channel.send(type.to_sym, name, options) :

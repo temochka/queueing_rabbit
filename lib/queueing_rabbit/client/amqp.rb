@@ -115,6 +115,7 @@ module QueueingRabbit
       end
 
       def define_exchange(channel, name = '', options = {})
+        options = options.dup
         type = options.delete(:type)
         with_exchange = Proc.new do |exchange, _|
           yield exchange if block_given?

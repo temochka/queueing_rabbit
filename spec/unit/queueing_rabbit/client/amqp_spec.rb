@@ -216,11 +216,11 @@ describe QueueingRabbit::Client::AMQP do
       context 'with arguments and type' do
         let(:channel) { mock }
         let(:name) { 'some_exchange_name' }
-        let(:options) { {:type => 'direct'} }
+        let(:options) { {:type => 'direct', :durable => true} }
         let(:exchange) { mock }
 
         it 'creates an exchange of given type and options' do
-          channel.should_receive(:direct).with(name, options).
+          channel.should_receive(:direct).with(name, :durable => true).
                                           and_return(exchange)
           client.define_exchange(channel, name, options).should == exchange
         end
