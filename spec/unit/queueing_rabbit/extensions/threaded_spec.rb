@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'queueing_rabbit/extensions/threaded'
 
-describe QueueingRabbit::JobExtensions::Threaded do
+describe QueueingRabbit::JobExtensions::Threaded, :ruby => '1.8.7'  do
 
   let(:test_job) {
     Class.new(QueueingRabbit::AbstractJob) do
