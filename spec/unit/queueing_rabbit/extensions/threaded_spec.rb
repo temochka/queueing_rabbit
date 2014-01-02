@@ -1,5 +1,10 @@
 require 'spec_helper'
-require 'queueing_rabbit/extensions/threaded'
+
+if RUBY_VERSION != '1.8.7'
+  require 'queueing_rabbit/extensions/threaded'
+else
+  class QueueingRabbit::JobExtensions::Threaded; end
+end
 
 describe QueueingRabbit::JobExtensions::Threaded, :ruby => '1.8.7'  do
 

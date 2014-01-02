@@ -6,5 +6,5 @@ gemspec
 group :test do
   gem 'rspec', '~> 2.13.0'
   gem 'evented-spec', '~> 0.9.0'
-  gem 'celluloid', '~> 0.15.0'
+  gem 'celluloid', '~> 0.15.0' unless RUBY_VERSION == '1.8.7'
 end

@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'integration/jobs/json_threaded_print_line_job'
+require 'integration/jobs/json_threaded_print_line_job' unless RUBY_VERSION == '1.8.7'
 
 describe "Synchronous publishing and threaded consuming", :ruby => '1.8.7' do
   include_context "Auto-disconnect"
