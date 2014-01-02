@@ -3,7 +3,7 @@ module QueueingRabbit
   module Callbacks
 
     def before_consuming(&block)
-      setup_callback(:consuming_started, &block)
+      setup_callback(:worker_ready, &block)
     end
 
     def after_consuming(&block)

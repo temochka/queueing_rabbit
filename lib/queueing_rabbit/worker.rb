@@ -16,6 +16,8 @@ module QueueingRabbit
       conn = QueueingRabbit.connection
       trap_signals(conn)
 
+      QueueingRabbit.trigger_event(:worker_ready)
+
       jobs.each { |job| run_job(conn, job) }
 
       QueueingRabbit.trigger_event(:consuming_started)
