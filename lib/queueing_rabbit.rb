@@ -23,6 +23,7 @@ module QueueingRabbit
   extend Logging
   extend Callbacks
   extend Configuration
+  extend MonitorMixin
 
   class QueueingRabbitError < Exception; end
   class JobNotFoundError < QueueingRabbitError; end
@@ -31,13 +32,25 @@ module QueueingRabbit
   attr_accessor :logger, :client
 
   def connect
-    @connection ||= client.connect
+    synchronize do
+      @connection ||= client.connect
+    end
+  end
+  alias_method :conn, :connect
+  alias_method :connection, :connect
+
+  def disconnect
+    synchronize do
+      if connected?
+        @connection.close
+      end
+      drop_connection
+    end
   end
 
-  def connection
-    @connection ||= connect
+  def connected?
+    @connection && @connection.open?
   end
-  alias_method :conn, :connection
 
   def drop_connection
     @connection = nil
@@ -60,6 +73,12 @@ module QueueingRabbit
     follow_bus_requirements(bus) do |ch, ex|
       conn.enqueue(ex, payload, options)
       ch.close
+    end
+  end
+
+  def begin_worker_loop
+    conn.begin_worker_loop do
+      yield
     end
   end
 

@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe QueueingRabbit do
+  include_context "No existing connections"
   include_context "StringIO logger"
 
   let(:connection) { mock }
@@ -22,8 +23,6 @@ describe QueueingRabbit do
                                    binding_declaration_2],
          :bind_queue? => true)
   }
-
-  before(:each) { subject.drop_connection }
 
   it { should respond_to(:logger) }
   it { should respond_to(:client) }
@@ -65,6 +64,19 @@ describe QueueingRabbit do
       subject.should_receive(:info).and_return(nil)
       subject.enqueue(job, payload, options).should be_true
     end
+  end
+
+  describe '.begin_worker_loop' do
+
+    before do
+      subject.instance_variable_set(:@connection, connection)
+    end
+
+    it 'begins the worker loop on opened connection' do
+      connection.should_receive(:begin_worker_loop).and_yield
+      expect { |b| subject.begin_worker_loop(&b) }.to yield_control
+    end
+
   end
 
   describe '.follow_job_requirements' do
