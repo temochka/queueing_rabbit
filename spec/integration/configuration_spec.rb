@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe 'Configuring jobs' do
+  include_context "Auto-disconnect"
+  
   context 'when a job is inherited from a base class' do
     let(:base_class) {
       Class.new(QueueingRabbit::AbstractJob) do

@@ -3,6 +3,7 @@ require 'spec_helper'
 describe QueueingRabbit::Client::AMQP do
 
   include_context "StringIO logger"
+  include_context "No existing connections"
 
   let(:connection) { mock :on_tcp_connection_loss => nil, :on_recovery => nil }
 
@@ -168,7 +169,7 @@ describe QueueingRabbit::Client::AMQP do
       end
     end
 
-    describe '#disconnect' do
+    describe '#close' do
       before do
         subject.should_receive(:info)
         connection.should_receive(:close).and_yield
@@ -176,7 +177,7 @@ describe QueueingRabbit::Client::AMQP do
       end
 
       it 'writes the log, closes connection and stops the reactor' do
-        client.disconnect
+        client.close
       end
     end
 

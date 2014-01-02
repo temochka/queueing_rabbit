@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'integration/jobs/print_line_job'
 
 describe "Persistent asynchronous publishing and consuming" do
+  include_context "Auto-disconnect"
   include_context "Evented spec"
   include_context "StringIO logger"
 

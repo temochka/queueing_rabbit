@@ -71,7 +71,11 @@ module QueueingRabbit
         @event_machine_thread.join if @event_machine_thread
       end
 
-      def disconnect
+      def open?
+        EM.reactor_running? && @connection.open?
+      end
+
+      def close
         info "closing AMQP broker connection..."
 
         connection.close do

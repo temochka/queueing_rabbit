@@ -10,7 +10,6 @@ module QueueingRabbit
       sync_stdio
       validate_jobs
       constantize_jobs
-      use_asynchronous_client
     end
 
     def work
@@ -23,7 +22,7 @@ module QueueingRabbit
     end
 
     def work!
-      EM.run do
+      QueueingRabbit.begin_worker_loop do
         work
       end
     end
@@ -45,10 +44,6 @@ module QueueingRabbit
     end
 
   private
-
-    def use_asynchronous_client
-      QueueingRabbit.client = QueueingRabbit::Client::AMQP
-    end
 
     def validate_jobs
       if jobs.nil? || jobs.empty?
@@ -94,7 +89,7 @@ module QueueingRabbit
 
     def trap_signals(connection)
       handler = Proc.new do
-        connection.disconnect {
+        connection.close {
           QueueingRabbit.trigger_event(:consuming_done)
           remove_pidfile
         }

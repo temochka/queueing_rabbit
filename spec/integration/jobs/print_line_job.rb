@@ -1,4 +1,5 @@
 class PrintLineJob < QueueingRabbit::AbstractJob
+
   class << self
     attr_accessor :io
   end
@@ -8,4 +9,5 @@ class PrintLineJob < QueueingRabbit::AbstractJob
   def perform
     self.class.io.puts payload
   end
+
 end

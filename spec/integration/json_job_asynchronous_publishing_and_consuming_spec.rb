@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'integration/jobs/print_line_job'
 
 describe "Asynchronous publishing and consuming with JSON serialization" do
+  include_context "Auto-disconnect"
   include_context "Evented spec"
   include_context "StringIO logger"
 

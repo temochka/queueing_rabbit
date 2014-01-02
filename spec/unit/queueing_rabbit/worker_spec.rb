@@ -56,11 +56,6 @@ describe QueueingRabbit::Worker do
 
       it { should be }
       it { should respond_to(:jobs) }
-      it 'changes used client to asynchronous' do
-        expect { creation.call }.to change { QueueingRabbit.client.to_s }.
-                                    from(QueueingRabbit::Client::Bunny.to_s).
-                                    to(QueueingRabbit::Client::AMQP.to_s)
-      end
     end
   end
 
@@ -100,8 +95,8 @@ describe QueueingRabbit::Worker do
       end
 
       describe '#work!' do
-        it 'runs #work and joins the eventmachine thread' do
-          EM.should_receive(:run).and_yield
+        it 'runs #work and joins the connection thread' do
+          QueueingRabbit.should_receive(:begin_worker_loop).and_yield
           subject.work!
         end
       end

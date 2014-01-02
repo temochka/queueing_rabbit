@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'integration/jobs/print_line_job'
 
 describe "Synchronous publishing example" do
+  include_context "Auto-disconnect"
   include_context "StringIO logger"
 
   let(:job) { PrintLineJob }

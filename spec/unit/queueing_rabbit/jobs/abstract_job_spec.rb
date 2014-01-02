@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe QueueingRabbit::AbstractJob do
+
   let(:job_class) {
     Class.new(QueueingRabbit::AbstractJob) do
       queue 'test_queue', :durable => true

@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe QueueingRabbit::Client::Bunny do
+
+  include_context "No existing connections"
+
   let(:connection) { stub(:start => true) }
 
   before do

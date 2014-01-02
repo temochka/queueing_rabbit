@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'integration/jobs/print_line_job'
 
 describe 'Binary synchronous publishing via bus and asynchronous consuming via job' do
+  include_context "Auto-disconnect"
   include_context "StringIO logger"
   include_context "Evented spec"
   
@@ -19,6 +20,7 @@ describe 'Binary synchronous publishing via bus and asynchronous consuming via j
     job.io = io
     bus.publish(line)
     QueueingRabbit.drop_connection
+    QueueingRabbit.client = QueueingRabbit::Client::AMQP
   end
 
   it "works" do

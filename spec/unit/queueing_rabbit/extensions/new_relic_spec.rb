@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe QueueingRabbit::JobExtensions::NewRelic do
+
   let(:installation) {
     Proc.new do
       job.class_eval { include QueueingRabbit::JobExtensions::NewRelic }

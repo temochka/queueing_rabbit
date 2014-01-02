@@ -6,6 +6,26 @@ module QueueingRabbit
 
     class Bunny
 
+      class Metadata
+
+        def initialize(channel, delivery_info, properties)
+          @channel = channel
+          @delivery_info = delivery_info
+          @properties = properties
+        end
+
+        def ack
+          @channel.ack(@delivery_info.delivery_tag, false)
+        end
+
+        def headers
+          @properties.headers
+        end
+
+      end
+
+      include QueueingRabbit::Logging
+
       attr_reader :connection
 
       def self.connect
@@ -48,6 +68,30 @@ module QueueingRabbit
 
       def queue_size(queue)
         queue.status[:message_count]
+      end
+
+      def listen_queue(queue, options = {})
+        queue.subscribe(options) do |delivery_info, properties, payload|
+          begin
+            yield payload, Metadata.new(queue.channel, delivery_info, properties)
+          rescue => e
+            error "unexpected error #{e.class} occured: #{e.message}"
+            debug e
+          end
+        end
+      end
+
+      def close
+        @connection.close
+      end
+
+      def open?
+        @connection.open?
+      end
+
+      def begin_worker_loop
+        yield
+        @connection.reader_loop.join
       end
 
     private

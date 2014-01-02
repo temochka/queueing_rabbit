@@ -13,10 +13,6 @@ require 'support/shared_contexts'
 require 'queueing_rabbit'
 
 RSpec.configure do |config|
-  config.before(:each) {
-    QueueingRabbit.drop_connection
-  }
-
   config.exclusion_filter = {
     :ruby => RUBY_VERSION
   }
