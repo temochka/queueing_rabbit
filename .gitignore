@@ -4,6 +4,8 @@
 .config
 .yardoc
 .rvmrc
+*.sublime-project
+*.sublime-workspace
 Gemfile.lock
 InstalledFiles
 _yardoc
