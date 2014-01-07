@@ -28,8 +28,14 @@ module QueueingRabbit
 
       attr_reader :connection
 
+      def self.connection_options
+        {:connection_timeout => QueueingRabbit.tcp_timeout,
+         :heartbeat => QueueingRabbit.heartbeat}
+      end
+
       def self.connect
-        self.new(::Bunny.new(QueueingRabbit.amqp_uri))
+        self.new(::Bunny.new(QueueingRabbit.amqp_uri,
+                 connection_options))
       end
 
       def open_channel(options = {})

@@ -15,7 +15,7 @@ describe QueueingRabbit::Client::Bunny do
 
     describe '.connect' do
       before do
-        Bunny.should_receive(:new).with(QueueingRabbit.amqp_uri).
+        Bunny.should_receive(:new).with(QueueingRabbit.amqp_uri, kind_of(Hash)).
                                    and_return(connection)
       end
 
