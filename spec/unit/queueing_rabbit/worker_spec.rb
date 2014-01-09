@@ -69,7 +69,7 @@ describe QueueingRabbit::Worker do
 
     describe '#work' do
       before do
-        QueueingRabbit.should_receive(:connection).and_return(connection)
+        QueueingRabbit.stub(:connection).and_return(connection)
         [class_based_job, instance_based_job].each do |job|
           QueueingRabbit.should_receive(:follow_job_requirements).
                          with(job).
@@ -165,5 +165,25 @@ describe QueueingRabbit::Worker do
     describe "#pid" do
       its(:pid) { should == Process.pid }
     end
+
+    describe '#stop' do
+
+      let(:file_name) { mock }
+
+      before do
+        subject.instance_variable_set(:@pidfile, file_name)
+        QueueingRabbit.stub(:connection).and_return(connection)
+      end
+
+      it 'closes the connection, removes the pidfile and reports the event' do
+        connection.should_receive(:close).and_yield
+        File.stub(:exists?).with(file_name).and_return(true)
+        File.should_receive(:delete).with(file_name)
+        QueueingRabbit.should_receive(:trigger_event).with(:consuming_done)
+        subject.stop
+      end
+
+    end
+
   end
 end

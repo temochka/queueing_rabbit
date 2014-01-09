@@ -16,12 +16,11 @@ module QueueingRabbit
     end
 
     def work
-      conn = QueueingRabbit.connection
-      trap_signals(conn)
+      trap_signals
 
       QueueingRabbit.trigger_event(:worker_ready)
 
-      jobs.each { |job| run_job(conn, job) }
+      jobs.each { |job| run_job(QueueingRabbit.connection, job) }
 
       QueueingRabbit.trigger_event(:consuming_started)
     end
@@ -56,6 +55,16 @@ module QueueingRabbit
 
     def to_s
       "PID=#{pid}, JOBS=#{jobs.join(',')}"
+    end
+
+    def stop
+      return unless QueueingRabbit.connection
+      
+      QueueingRabbit.connection.close {
+        info "gracefully shutting down the worker #{self}"
+        remove_pidfile
+        QueueingRabbit.trigger_event(:consuming_done)
+      }
     end
 
   private
@@ -102,14 +111,8 @@ module QueueingRabbit
       $stderr.sync = true
     end
 
-    def trap_signals(connection)
-      handler = Proc.new do
-        connection.close {
-          info "attempting to gracefully shut down the worker #{worker}"
-          QueueingRabbit.trigger_event(:consuming_done)
-          remove_pidfile
-        }
-      end
+    def trap_signals
+      handler = method(:stop)
 
       Signal.trap("TERM", &handler)
       Signal.trap("INT", &handler)
