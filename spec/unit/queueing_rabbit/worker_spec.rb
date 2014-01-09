@@ -106,13 +106,45 @@ describe QueueingRabbit::Worker do
       let(:file_name) { mock }
       let(:file) { mock }
 
-      before do
-        File.should_receive(:open).with(file_name, 'w').and_yield(file)
-        file.should_receive(:<<).with(Process.pid)
+      context 'given pidfile is already in use' do
+
+        it 'raises a worker error' do
+          File.stub(:exists?).with(file_name).and_return(true)
+          File.should_receive(:read).with(file_name).and_return('123')
+          Process.should_receive(:getpgid).with(123).and_return(123)
+          expect { subject.use_pidfile(file_name) }.
+              to raise_error(QueueingRabbit::Worker::WorkerError)
+        end
+
       end
 
-      it 'writes pid to a file' do
-        subject.use_pidfile(file_name)
+      context 'given pidfile is not in use' do
+
+        before do
+          File.should_receive(:open).with(file_name, 'w').and_yield(file)
+          file.should_receive(:<<).with(Process.pid)
+        end
+
+        context 'there is an abandoned pidfile' do
+
+          it 'removes the abandoned pidfile and writes pid to a file' do
+            File.stub(:exists?).with(file_name).and_return(true)
+            File.should_receive(:read).with(file_name).and_return('123')
+            Process.should_receive(:getpgid).with(123).and_raise(Errno::ESRCH)
+            subject.use_pidfile(file_name)
+          end
+
+        end
+
+        context 'new pidfile' do
+
+          it 'creates a pidfile' do
+            File.stub(:exists?).with(file_name).and_return(false)
+            subject.use_pidfile(file_name)
+          end
+
+        end
+
       end
     end
 

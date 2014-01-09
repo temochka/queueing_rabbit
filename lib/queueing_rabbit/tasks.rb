@@ -8,10 +8,6 @@ namespace :queueing_rabbit do
   task :work => :setup do
     require 'queueing_rabbit'
 
-    if ENV['PIDFILE'] && File.exists?(ENV['PIDFILE'])
-      abort "PID file already exists. Is the worker running?"
-    end
-
     jobs = (ENV['JOBS'] || ENV['JOB']).to_s.split(',')
 
     begin
@@ -28,8 +24,11 @@ namespace :queueing_rabbit do
       Process.daemon(true)
     end
 
-    worker.use_pidfile(ENV['PIDFILE']) if ENV['PIDFILE']
-
-    worker.work!
+    begin
+      worker.use_pidfile(ENV['PIDFILE']) if ENV['PIDFILE']
+      worker.work!
+    rescue QueueingRabbit::Worker::Error => e
+      abort e.message
+    end
   end
 end

@@ -1,5 +1,8 @@
 module QueueingRabbit
   class Worker
+
+    class WorkerError < RuntimeError; end
+
     include QueueingRabbit::Logging
 
     attr_accessor :jobs
@@ -24,19 +27,27 @@ module QueueingRabbit
     end
 
     def work!
-      info "starting a new queueing_rabbit worker #{worker}"
+      info "starting a new queueing_rabbit worker #{self}"
 
-      QueueingRabbit.begin_worker_loop do
-        work
-      end
+      QueueingRabbit.begin_worker_loop { work }
     end
 
     def use_pidfile(filename)
-      File.open(@pidfile = filename, 'w') { |f| f << pid }
+      @pidfile = filename
+      cleanup_pidfile
+      File.open(@pidfile, 'w') { |f| f << pid }
     end
 
     def remove_pidfile
-      File.delete(@pidfile) if @pidfile && File.exists?(@pidfile)
+      File.delete(@pidfile) if pidfile_exists?
+    end
+
+    def read_pidfile
+      File.read(@pidfile).to_i if pidfile_exists?
+    end
+
+    def pidfile_exists?
+      @pidfile && File.exists?(@pidfile)
     end
 
     def pid
@@ -82,7 +93,7 @@ module QueueingRabbit
       elsif job <= QueueingRabbit::AbstractJob
         job.new(payload, metadata).perform
       else
-        error "do not know how to perform job #{job}"
+        error "don't know how to perform job #{job}"
       end
     end
 
@@ -103,5 +114,16 @@ module QueueingRabbit
       Signal.trap("TERM", &handler)
       Signal.trap("INT", &handler)
     end
+
+    def cleanup_pidfile
+      return unless pid_in_file = read_pidfile
+      Process.getpgid(pid_in_file)
+      fatal "failed to use the pidfile #{@pidfile}. It is already " \
+            "in use by a process with pid=#{pid_in_file}."
+      raise WorkerError.new('The pidfile is already in use.')
+    rescue Errno::ESRCH
+      info "found abandoned pidfile: #{@pidfile}. Can be safely overwritten."
+    end
+
   end
 end
