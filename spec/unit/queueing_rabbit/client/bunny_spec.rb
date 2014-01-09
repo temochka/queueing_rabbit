@@ -128,9 +128,18 @@ describe QueueingRabbit::Client::Bunny do
 
     describe '#close' do
 
-      it 'closes the connection and yields a block if given' do
+      before do
         connection.should_receive(:close)
+      end
+
+      it 'closes the connection and yields a block if given' do
         expect { |b| client.close(&b) }.to yield_control
+      end
+
+      it 'discontinues the worker loop' do
+        expect { |b| client.close(&b) }.
+            to change{client.instance_variable_get(:@continue_worker_loop)}.
+               to(false)
       end
 
     end

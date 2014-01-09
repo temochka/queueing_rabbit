@@ -90,6 +90,7 @@ module QueueingRabbit
       def close
         @connection.close
         yield if block_given?
+        @continue_worker_loop = false
       end
 
       def open?
@@ -98,8 +99,9 @@ module QueueingRabbit
 
       def begin_worker_loop
         yield
+        @continue_worker_loop = true
         # We may need to add signal handling here
-        sleep 2 while true
+        sleep 2 while @continue_worker_loop
       end
 
     private
