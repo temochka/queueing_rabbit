@@ -30,8 +30,6 @@ namespace :queueing_rabbit do
 
     worker.use_pidfile(ENV['PIDFILE']) if ENV['PIDFILE']
 
-    worker.info "starting a new queueing_rabbit worker #{worker}"
-
     worker.work!
   end
 end

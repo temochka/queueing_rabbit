@@ -24,6 +24,8 @@ module QueueingRabbit
     end
 
     def work!
+      info "starting a new queueing_rabbit worker #{worker}"
+
       QueueingRabbit.begin_worker_loop do
         work
       end
@@ -92,6 +94,7 @@ module QueueingRabbit
     def trap_signals(connection)
       handler = Proc.new do
         connection.close {
+          info "attempting to gracefully shut down the worker #{worker}"
           QueueingRabbit.trigger_event(:consuming_done)
           remove_pidfile
         }
