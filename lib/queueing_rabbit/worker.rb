@@ -59,7 +59,7 @@ module QueueingRabbit
 
     def stop
       return unless QueueingRabbit.connection
-      
+
       QueueingRabbit.connection.close {
         info "gracefully shutting down the worker #{self}"
         remove_pidfile
@@ -112,10 +112,8 @@ module QueueingRabbit
     end
 
     def trap_signals
-      handler = method(:stop)
-
-      Signal.trap("TERM", &handler)
-      Signal.trap("INT", &handler)
+      Signal.trap("TERM") { stop }
+      Signal.trap("INT") { stop }
     end
 
     def cleanup_pidfile
