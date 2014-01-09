@@ -27,7 +27,7 @@ namespace :queueing_rabbit do
     begin
       worker.use_pidfile(ENV['PIDFILE']) if ENV['PIDFILE']
       worker.work!
-    rescue QueueingRabbit::Worker::Error => e
+    rescue QueueingRabbit::Worker::WorkerError => e
       abort e.message
     end
   end
