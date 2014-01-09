@@ -126,5 +126,14 @@ describe QueueingRabbit::Client::Bunny do
       end
     end
 
+    describe '#close' do
+
+      it 'closes the connection and yields a block if given' do
+        connection.should_receive(:close)
+        expect { |b| client.close(&b) }.to yield_control
+      end
+
+    end
+
   end
 end

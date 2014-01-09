@@ -89,6 +89,7 @@ module QueueingRabbit
 
       def close
         @connection.close
+        yield if block_given?
       end
 
       def open?
@@ -97,7 +98,8 @@ module QueueingRabbit
 
       def begin_worker_loop
         yield
-        @connection.reader_loop.join
+        # We may need to add signal handling here
+        sleep 2 while true
       end
 
     private
