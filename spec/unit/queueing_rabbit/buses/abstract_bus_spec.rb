@@ -21,5 +21,21 @@ describe QueueingRabbit::AbstractBus do
   its(:exchange_name) { should == 'test_exchange' }
   its(:exchange_options) { should include(:durable => false) }
   its(:publishing_defaults) { should include(:routing_key => 'test_queue') }
+
+  describe '.demand_batch_publishing!' do
+
+    let(:exchange) { mock }
+    
+    it 'assigns a shared exchange instance to a job class' do
+      QueueingRabbit.should_receive(:follow_bus_requirements).
+                     with(subject).
+                     and_yield(nil, exchange)
+      subject.demand_batch_publishing!
+      expect(subject.shared_exchange).to eq(exchange)
+      expect(subject.batch_publishing?).to be_true
+      expect(QueueingRabbit::AbstractBus.shared_exchange).to be_nil
+    end
+
+  end
   
 end

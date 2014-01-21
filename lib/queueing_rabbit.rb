@@ -60,7 +60,7 @@ module QueueingRabbit
     info "enqueueing job #{job}"
 
     follow_job_requirements(job) do |channel, exchange, _|
-      conn.enqueue(exchange, payload, options)
+      publish_to_exchange(exchange, payload, options)
       channel.close
     end
 
@@ -70,10 +70,17 @@ module QueueingRabbit
   def publish(bus, payload = nil, options = {})
     info "publishing to event bus #{bus}"
 
-    follow_bus_requirements(bus) do |ch, ex|
-      conn.enqueue(ex, payload, options)
-      ch.close
+    follow_bus_requirements(bus) do |channel, exchange|
+      publish_to_exchange(exchange, payload, options)
+      channel.close
     end
+
+    true
+  end
+
+  def publish_to_exchange(exchange, payload = nil, options = {})
+    conn.publish(exchange, payload, options)
+    true
   end
 
   def begin_worker_loop
@@ -114,8 +121,10 @@ module QueueingRabbit
 
   def purge_queue(job)
     connection.open_channel(job.channel_options) do |c, _|
-      connection.define_queue(c, job.queue_name, job.queue_options).purge
-      c.close
+      connection.define_queue(c, job.queue_name, job.queue_options) do |q|
+        q.purge(:nowait => true)
+        c.close
+      end
     end
     true
   end

@@ -52,7 +52,7 @@ describe QueueingRabbit do
       subject.should_receive(:follow_job_requirements).
               with(job).
               and_yield(channel, exchange, nil)
-      connection.should_receive(:enqueue).with(exchange, payload, options)
+      connection.should_receive(:publish).with(exchange, payload, options)
       channel.should_receive(:close)
     end
 
@@ -64,6 +64,40 @@ describe QueueingRabbit do
       subject.should_receive(:info).and_return(nil)
       subject.enqueue(job, payload, options).should be_true
     end
+  end
+
+  describe '.publish' do
+
+    let(:bus) { QueueingRabbit::AbstractBus }
+    let(:payload) { mock(:to_s => 'payload') }
+    let(:options) { mock }
+    let(:exchange) { mock }
+    let(:channel) { mock }
+
+    it 'publishes payload to a given bus with options' do
+      subject.instance_variable_set(:@connection, connection)
+      subject.should_receive(:follow_bus_requirements).
+              with(bus).
+              and_yield(channel, exchange)
+      connection.should_receive(:publish).with(exchange, payload, options)
+      channel.should_receive(:close)
+      subject.publish(bus, payload, options).should be_true
+    end
+
+  end
+
+  describe '.publish_to_exchange' do
+
+    let(:exchange) { mock }
+    let(:payload) { mock }
+    let(:options) { mock }
+
+    it 'publishes payload to a given exchange with options' do
+      subject.instance_variable_set(:@connection, connection)
+      connection.should_receive(:publish).with(exchange, payload, options)
+      subject.publish_to_exchange(exchange, payload, options).should be_true
+    end
+
   end
 
   describe '.begin_worker_loop' do
@@ -164,8 +198,9 @@ describe QueueingRabbit do
       connection.should_receive(:open_channel).
                  with(channel_options).and_yield(channel, nil)
       connection.should_receive(:define_queue).
-                 with(channel, queue_name, queue_options).and_return(queue)
-      queue.should_receive(:purge).and_return(true)
+                 with(channel, queue_name, queue_options).
+                 and_yield(queue)
+      queue.should_receive(:purge).with(:nowait => true).and_return(true)
       channel.should_receive(:close)
     end
 

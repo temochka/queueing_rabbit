@@ -63,8 +63,14 @@ module QueueingRabbit
       {:routing_key => queue_name.to_s}.merge(@publishing_defaults)
     end
 
+    def demand_batch_publishing!
+      QueueingRabbit.follow_job_requirements(self) do |_, exchange, _|
+        @shared_exchange = exchange
+      end
+    end
+
     def enqueue(payload, options = {})
-      QueueingRabbit.enqueue(self, payload, publishing_defaults.merge(options))
+      publish(payload, options, :enqueue)
     end
 
   end

@@ -45,6 +45,22 @@ describe QueueingRabbit::AbstractJob do
     its(:queue_size) { should == size }
   end
 
+  describe '.demand_batch_publishing!' do
+
+    let(:exchange) { mock }
+    
+    it 'assigns a shared exchange instance to a job class' do
+      QueueingRabbit.should_receive(:follow_job_requirements).
+                     with(subject).
+                     and_yield(nil, exchange, nil)
+      subject.demand_batch_publishing!
+      expect(subject.shared_exchange).to eq(exchange)
+      expect(subject.batch_publishing?).to be_true
+      expect(QueueingRabbit::AbstractJob.shared_exchange).to be_nil
+    end
+
+  end
+
   describe '.enqueue' do
     let(:payload) { mock }
     let(:options) { {:persistent => true} }

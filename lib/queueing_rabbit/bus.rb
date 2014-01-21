@@ -10,6 +10,8 @@ module QueueingRabbit
       end
     end
 
+    attr_reader :shared_exchange
+
     def channel(options = {})
       @channel_options ||= {}
       @channel_options.update(options)
@@ -43,8 +45,24 @@ module QueueingRabbit
       @publishing_defaults || {}
     end
 
-    def publish(payload, options = {})
-      QueueingRabbit.publish(self, payload, publishing_defaults.merge(options))
+    def demand_batch_publishing!
+      QueueingRabbit.follow_bus_requirements(self) do |_, exchange|
+        @shared_exchange = exchange
+      end
+    end
+
+    def batch_publishing?
+      !!@shared_exchange
+    end
+
+    def publish(payload, options = {}, method = :publish)
+      args = [payload, publishing_defaults.merge(options)]
+      
+      if batch_publishing?
+        QueueingRabbit.publish_to_exchange(@shared_exchange, *args)
+      else
+        QueueingRabbit.send(method, self, *args)
+      end
     end
 
     protected
