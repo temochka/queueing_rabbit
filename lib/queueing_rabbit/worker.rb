@@ -57,9 +57,7 @@ module QueueingRabbit
       "PID=#{pid}, JOBS=#{jobs.join(',')}"
     end
 
-    def stop
-      connection = QueueingRabbit.connection
-
+    def stop(connection = QueueingRabbit.connection)
       connection.next_tick do
         connection.close do
           info "gracefully shutting down the worker #{self}"
@@ -114,8 +112,9 @@ module QueueingRabbit
     end
 
     def trap_signals
-      Signal.trap("TERM") { stop }
-      Signal.trap("INT") { stop }
+      connection = QueueingRabbit.connection
+      Signal.trap("TERM") { stop(connection) }
+      Signal.trap("INT") { stop(connection) }
     end
 
     def cleanup_pidfile
