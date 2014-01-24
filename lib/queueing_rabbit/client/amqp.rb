@@ -141,6 +141,12 @@ module QueueingRabbit
         raise NotImplementedError
       end
 
+      def purge_queue(queue)
+        queue.purge do
+          yield if block_given?
+        end
+      end
+
       def next_tick(&block)
         EM.next_tick(&block)
       end

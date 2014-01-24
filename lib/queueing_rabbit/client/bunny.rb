@@ -87,6 +87,11 @@ module QueueingRabbit
         end
       end
 
+      def purge_queue(queue)
+        queue.purge
+        yield if block_given?
+      end
+
       def close
         @connection.close
         yield if block_given?

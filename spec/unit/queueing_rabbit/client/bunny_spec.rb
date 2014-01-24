@@ -144,6 +144,17 @@ describe QueueingRabbit::Client::Bunny do
 
     end
 
+    describe '#purge_queue' do
+
+      let(:queue) { mock }
+
+      it 'purges the queue and fires the provided callback when done' do
+        queue.should_receive(:purge)
+        expect { |b| client.purge_queue(queue, &b) }.to yield_control
+      end
+
+    end
+
     describe '#next_tick' do
 
       context 'given the worker loop is running' do

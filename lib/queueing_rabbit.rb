@@ -122,8 +122,7 @@ module QueueingRabbit
   def purge_queue(job)
     connection.open_channel(job.channel_options) do |c, _|
       connection.define_queue(c, job.queue_name, job.queue_options) do |q|
-        q.purge(:nowait => true)
-        c.close
+        connection.purge_queue(q) { c.close }
       end
     end
     true

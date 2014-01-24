@@ -200,7 +200,7 @@ describe QueueingRabbit do
       connection.should_receive(:define_queue).
                  with(channel, queue_name, queue_options).
                  and_yield(queue)
-      queue.should_receive(:purge).with(:nowait => true).and_return(true)
+      connection.should_receive(:purge_queue).and_yield
       channel.should_receive(:close)
     end
 
@@ -208,4 +208,5 @@ describe QueueingRabbit do
       subject.purge_queue(job).should be_true
     end
   end
+
 end
