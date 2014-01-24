@@ -58,13 +58,15 @@ module QueueingRabbit
     end
 
     def stop
-      return unless QueueingRabbit.connection
+      connection = QueueingRabbit.connection
 
-      QueueingRabbit.connection.close {
-        info "gracefully shutting down the worker #{self}"
-        remove_pidfile
-        QueueingRabbit.trigger_event(:consuming_done)
-      }
+      connection.next_tick do
+        connection.close do
+          info "gracefully shutting down the worker #{self}"
+          remove_pidfile
+          QueueingRabbit.trigger_event(:consuming_done)
+        end
+      end
     end
 
   private
