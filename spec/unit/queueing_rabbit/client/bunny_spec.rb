@@ -144,5 +144,28 @@ describe QueueingRabbit::Client::Bunny do
 
     end
 
+    describe '#next_tick' do
+
+      context 'given the worker loop is running' do
+
+        it 'performs the action on next tick' do
+          client.connection.should_receive(:close)
+          Thread.new { sleep 1; client.next_tick { client.close } }
+          expect { Timeout.timeout(5) { client.begin_worker_loop } }.
+              not_to raise_error(Timeout::Error)
+        end
+
+      end
+
+      context 'given the worker loop is not running' do
+
+        it 'performs the action immediately' do
+          expect(client.next_tick { 42 }).to eq(42)
+        end
+
+      end
+
+    end
+
   end
 end

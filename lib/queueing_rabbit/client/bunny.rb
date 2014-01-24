@@ -97,11 +97,23 @@ module QueueingRabbit
         @connection.open?
       end
 
+      def next_tick(&block)
+        if @continue_worker_loop
+          @actions_queue << block
+        else
+          block.call
+        end
+      end
+
       def begin_worker_loop
-        yield
+        yield if block_given?
+        @actions_queue = []
         @continue_worker_loop = true
         # We may need to add signal handling here
-        sleep 2 while @continue_worker_loop
+        while @continue_worker_loop
+          @actions_queue.take_while { |block| block.call || true }
+          sleep 1
+        end
       end
 
     private

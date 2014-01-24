@@ -238,5 +238,15 @@ describe QueueingRabbit::Client::AMQP do
         client.enqueue(exchange, payload, options)
       end
     end
+
+    describe '#next_tick' do
+
+      it 'schedules given action to be performed at the next EM tick' do
+        EM.should_receive(:next_tick)
+        client.next_tick {}
+      end
+
+    end
+
   end
 end

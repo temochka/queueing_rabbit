@@ -141,6 +141,16 @@ module QueueingRabbit
         raise NotImplementedError
       end
 
+      def next_tick(&block)
+        EM.next_tick(&block)
+      end
+
+      def begin_worker_loop
+        EM.run do
+          yield if block_given?
+        end
+      end
+
     private
 
       def setup_callbacks
