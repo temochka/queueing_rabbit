@@ -40,7 +40,8 @@ module QueueingRabbit
 
       def open_channel(options = {})
         ch = connection.create_channel
-        ch.confirm_select if !!options[:use_publisher_confirms]
+        ch.prefetch(options[:prefetch]) if options[:prefetch]
+        ch.confirm_select if options[:use_publisher_confirms]
         yield ch, nil
         ch
       end

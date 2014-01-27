@@ -36,12 +36,13 @@ describe QueueingRabbit::Client::Bunny do
     it { should be }
 
     describe '#open_channel' do
-      let(:options) { {:use_publisher_confirms => true} }
+      let(:options) { {:use_publisher_confirms => true, :prefetch => 42} }
       let(:channel) { mock }
 
       before do
         connection.should_receive(:create_channel).and_return(channel)
         channel.should_receive(:confirm_select)
+        channel.should_receive(:prefetch).with(42)
       end
 
       it 'creates a channel and yields it' do
