@@ -18,8 +18,8 @@ Gem::Specification.new do |gem|
   gem.extra_rdoc_files  = [ "LICENSE", "README.md" ]
   gem.rdoc_options      = ["--charset=UTF-8"]
 
-  gem.add_dependency "amqp",  "~> 1.1.0"
-  gem.add_dependency "bunny", "~> 1.0.0"
+  gem.add_dependency "amqp",  "~> 1.3.0"
+  gem.add_dependency "bunny", "~> 1.1.2"
   gem.add_dependency "rake",  ">= 0"
   gem.add_dependency "json",  ">= 0"
 
