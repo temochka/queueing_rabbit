@@ -97,16 +97,7 @@ module QueueingRabbit
 
       def listen_queue(queue, options = {}, &block)
         queue.subscribe(options) do |metadata, payload|
-          process_message(payload, metadata, &block)
-        end
-      end
-
-      def process_message(payload, metadata)
-        begin
           yield payload, metadata
-        rescue => e
-          error "unexpected error #{e.class} occured: #{e.message}"
-          debug e
         end
       end
 

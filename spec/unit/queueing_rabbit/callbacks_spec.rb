@@ -50,4 +50,18 @@ describe QueueingRabbit::Callbacks do
       end
     end
   end
+
+  describe 'a callback with an argument' do
+    let(:result) { {} }
+    let(:callback) { Proc.new { |a| result.merge!(:answer => a) } }
+
+    before do
+      subject.setup_callback(:answer!, &callback)
+    end
+
+    it 'executes a callback with an argument' do
+      expect{subject.trigger_event(:answer!, 42)}.
+          to change{result}.to(:answer => 42)
+    end
+  end
 end

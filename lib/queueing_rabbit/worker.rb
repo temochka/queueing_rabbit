@@ -67,6 +67,22 @@ module QueueingRabbit
       end
     end
 
+    def invoke_job(job, payload, metadata)
+      info "performing job #{job}"
+      
+      if job.respond_to?(:perform)
+        job.perform(payload, metadata)
+      elsif job <= QueueingRabbit::AbstractJob
+        job.new(payload, metadata).perform
+      else
+        error "don't know how to perform job #{job}"
+      end
+    rescue => e
+      QueueingRabbit.trigger_event(:consumer_error, e)
+      error "unexpected error #{e.class} occured: #{e.message}"
+      debug e
+    end
+
   private
 
     def validate_jobs
@@ -90,19 +106,8 @@ module QueueingRabbit
     def run_job(conn, job)
       QueueingRabbit.follow_job_requirements(job) do |_, _, queue|
         conn.listen_queue(queue, job.listening_options) do |payload, metadata|
-          info "performing job #{job}"
           invoke_job(job, payload, metadata)
         end
-      end
-    end
-
-    def invoke_job(job, payload, metadata)
-      if job.respond_to?(:perform)
-        job.perform(payload, metadata)
-      elsif job <= QueueingRabbit::AbstractJob
-        job.new(payload, metadata).perform
-      else
-        error "don't know how to perform job #{job}"
       end
     end
 

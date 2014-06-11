@@ -10,6 +10,10 @@ module QueueingRabbit
       setup_callback(:consuming_done, &block)
     end
 
+    def on_consumer_error(&block)
+      setup_callback(:consumer_error, &block)
+    end
+
     def on_event_machine_start(&block)
       setup_callback(:event_machine_started, &block)
     end
@@ -20,9 +24,9 @@ module QueueingRabbit
       @callbacks[event] << block
     end
 
-    def trigger_event(event)
+    def trigger_event(event, *args)
       if @callbacks && @callbacks[event]
-        @callbacks[event].each { |c| c.call }
+        @callbacks[event].each { |c| c.call(*args) }
       end
     end
 

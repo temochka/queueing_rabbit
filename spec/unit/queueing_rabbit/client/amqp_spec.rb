@@ -136,39 +136,6 @@ describe QueueingRabbit::Client::AMQP do
       end
     end
 
-    describe '#process_message' do
-      let(:payload) { mock }
-      let(:metadata) { mock }
-
-      it "yields given arguments to the block" do
-        client.process_message(payload, metadata) do |p, m|
-          p.should == payload
-          m.should == metadata
-        end
-      end
-
-      it "silences all errors risen" do
-        expect {
-          client.process_message(payload, metadata) do |_, _|
-            raise StandardError.new
-          end
-        }.to_not raise_error(StandardError)
-      end
-
-      context "logging" do
-        let(:error) { StandardError.new }
-
-        before do
-          client.should_receive(:error)
-          client.should_receive(:debug).with(error)
-        end
-
-        it "keeps the record of all errors risen" do
-          client.process_message(payload, metadata) { |_, _| raise error }
-        end
-      end
-    end
-
     describe '#close' do
       before do
         subject.should_receive(:info)

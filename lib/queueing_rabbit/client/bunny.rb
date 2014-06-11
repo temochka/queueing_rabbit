@@ -79,12 +79,7 @@ module QueueingRabbit
 
       def listen_queue(queue, options = {})
         queue.subscribe(options) do |delivery_info, properties, payload|
-          begin
-            yield payload, Metadata.new(queue.channel, delivery_info, properties)
-          rescue => e
-            error "unexpected error #{e.class} occured: #{e.message}"
-            debug e
-          end
+          yield payload, Metadata.new(queue.channel, delivery_info, properties)
         end
       end
 

@@ -162,6 +162,26 @@ describe QueueingRabbit::Worker do
       end
     end
 
+    describe '#invoke_job' do
+      let(:payload) { double }
+      let(:metadata) { double }
+
+      context 'when an exception occurs' do
+
+        let(:job) { double }
+        let(:error) { StandardError.new }
+
+        it 'silences errors and reports them via a global callback' do
+          expect(job).to receive(:perform).and_raise(error)
+          expect(QueueingRabbit).
+              to receive(:trigger_event).with(:consumer_error, error)
+          subject.invoke_job(job, payload, metadata)
+        end
+
+      end
+
+    end
+
     describe "#pid" do
       its(:pid) { should == Process.pid }
     end
