@@ -13,9 +13,9 @@ describe QueueingRabbit::JobExtensions::Retryable do
       end
     end
   }
-  let(:payload) { mock }
+  let(:payload) { double }
   let(:headers) { {'qr_retries' => 2} }
-  let(:metadata) { mock(:headers => headers)}
+  let(:metadata) { double(:headers => headers)}
 
   subject { test_job.new(payload, metadata) }
 
@@ -29,7 +29,7 @@ describe QueueingRabbit::JobExtensions::Retryable do
     it 'retries with increased number of attempts' do
       test_job.should_receive(:enqueue).
                with(payload, :headers => {'qr_retries' => 3}).and_return(true)
-      subject.retry_upto(3).should be_true
+      subject.retry_upto(3).should be true
     end
   end
 

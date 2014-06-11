@@ -36,7 +36,7 @@ describe QueueingRabbit::AbstractJob do
   its(:publishing_defaults) { should include(:routing_key => 'test_queue') }
 
   describe ".queue_size" do
-    let(:size) { mock }
+    let(:size) { double }
 
     before do
       QueueingRabbit.should_receive(:queue_size).with(subject).and_return(size)
@@ -47,7 +47,7 @@ describe QueueingRabbit::AbstractJob do
 
   describe '.demand_batch_publishing!' do
 
-    let(:exchange) { mock }
+    let(:exchange) { double }
     
     it 'assigns a shared exchange instance to a job class' do
       QueueingRabbit.should_receive(:follow_job_requirements).
@@ -55,14 +55,14 @@ describe QueueingRabbit::AbstractJob do
                      and_yield(nil, exchange, nil)
       subject.demand_batch_publishing!
       expect(subject.shared_exchange).to eq(exchange)
-      expect(subject.batch_publishing?).to be_true
+      expect(subject.batch_publishing?).to be true
       expect(QueueingRabbit::AbstractJob.shared_exchange).to be_nil
     end
 
   end
 
   describe '.enqueue' do
-    let(:payload) { mock }
+    let(:payload) { double }
     let(:options) { {:persistent => true} }
     let(:result_options) { options.merge(job_class.publishing_defaults) }
 
@@ -74,9 +74,9 @@ describe QueueingRabbit::AbstractJob do
   end
 
   context 'instance methods' do
-    let(:payload) { mock }
-    let(:headers) { mock }
-    let(:metadata) { stub(:headers => headers) }
+    let(:payload) { double }
+    let(:headers) { double }
+    let(:metadata) { double(:headers => headers) }
 
     subject { job_class.new(payload, metadata) }
 

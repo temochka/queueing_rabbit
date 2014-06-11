@@ -5,7 +5,7 @@ describe QueueingRabbit::Client::AMQP do
   include_context "StringIO logger"
   include_context "No existing connections"
 
-  let(:connection) { mock :on_tcp_connection_loss => nil, :on_recovery => nil }
+  let(:connection) { double(:on_tcp_connection_loss => nil, :on_recovery => nil) }
 
   before do
     QueueingRabbit.stub(:amqp_uri => 'amqp://localhost:5672')
@@ -77,7 +77,7 @@ describe QueueingRabbit::Client::AMQP do
     end
 
     describe '.join_event_machine_thread' do
-      let(:thread) { mock(:join => true) }
+      let(:thread) { double(:join => true) }
 
       before do
         subject.instance_variable_set(:@event_machine_thread, thread)
@@ -102,8 +102,8 @@ describe QueueingRabbit::Client::AMQP do
     it { should be }
 
     describe '#define_queue' do
-      let(:channel) { mock }
-      let(:queue) { mock }
+      let(:channel) { double }
+      let(:queue) { double }
       let(:queue_name) { "test_queue_name" }
       let(:options) { {:durable => false} }
 
@@ -118,10 +118,10 @@ describe QueueingRabbit::Client::AMQP do
     end
 
     describe '#listen_queue' do
-      let(:options) { mock }
-      let(:queue) { mock }
-      let(:metadata) { mock }
-      let(:payload) { mock }
+      let(:options) { double }
+      let(:queue) { double }
+      let(:metadata) { double }
+      let(:payload) { double }
 
       before do
         queue.should_receive(:subscribe).with(options).
@@ -150,8 +150,8 @@ describe QueueingRabbit::Client::AMQP do
 
     describe "#open_channel" do
       let(:options) { {:use_publisher_confirms => true} }
-      let(:channel) { mock }
-      let(:open_ok) { mock }
+      let(:channel) { double }
+      let(:open_ok) { double }
 
       before do
         AMQP::Channel.should_receive(:new).
@@ -169,8 +169,8 @@ describe QueueingRabbit::Client::AMQP do
 
     describe '#define_exchange' do
       context 'when only channel is given' do
-        let(:channel) { mock }
-        let(:default_exchange) { mock }
+        let(:channel) { double }
+        let(:default_exchange) { double }
 
         before do
           channel.should_receive(:default_exchange).and_return(default_exchange)
@@ -182,10 +182,10 @@ describe QueueingRabbit::Client::AMQP do
       end
 
       context 'with arguments and type' do
-        let(:channel) { mock }
+        let(:channel) { double }
         let(:name) { 'some_exchange_name' }
         let(:options) { {:type => 'direct', :durable => true} }
-        let(:exchange) { mock }
+        let(:exchange) { double }
 
         it 'creates an exchange of given type and options' do
           channel.should_receive(:direct).with(name, :durable => true).
@@ -196,9 +196,9 @@ describe QueueingRabbit::Client::AMQP do
     end
 
     describe '#enqueue' do
-      let(:exchange) { mock }
-      let(:payload) { mock }
-      let(:options) { mock }
+      let(:exchange) { double }
+      let(:payload) { double }
+      let(:options) { double }
 
       it "publishes a new message to given exchange with given options" do
         exchange.should_receive(:publish).with(payload, options)
@@ -217,7 +217,7 @@ describe QueueingRabbit::Client::AMQP do
 
     describe '#purge_queue' do
       
-      let(:queue) { mock }
+      let(:queue) { double }
 
       it 'purges the queue and fires the provided callback when done' do
         queue.should_receive(:purge).and_yield

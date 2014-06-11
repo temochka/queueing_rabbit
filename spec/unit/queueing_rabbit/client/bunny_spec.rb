@@ -4,10 +4,10 @@ describe QueueingRabbit::Client::Bunny do
 
   include_context "No existing connections"
 
-  let(:connection) { stub(:start => true) }
+  let(:connection) { double(:start => true) }
 
   before do
-    QueueingRabbit.stub(:amqp_uri => 'amqp://localhost:5672')
+    allow(QueueingRabbit).to receive(:amqp_uri).and_return('amqp://localhost:5672')
   end
 
   context 'class' do
@@ -37,7 +37,7 @@ describe QueueingRabbit::Client::Bunny do
 
     describe '#open_channel' do
       let(:options) { {:use_publisher_confirms => true, :prefetch => 42} }
-      let(:channel) { mock }
+      let(:channel) { double }
 
       before do
         connection.should_receive(:create_channel).and_return(channel)
@@ -53,8 +53,8 @@ describe QueueingRabbit::Client::Bunny do
     end
 
     describe '#define_queue' do
-      let(:channel) { mock }
-      let(:queue) { mock }
+      let(:channel) { double }
+      let(:queue) { double }
       let(:name) { 'queue_name_test' }
       let(:options) { {:foo => 'bar'} }
 
@@ -75,7 +75,7 @@ describe QueueingRabbit::Client::Bunny do
     end
 
     describe '#queue_size' do
-      let(:queue) { mock }
+      let(:queue) { double }
       let(:status) { {:message_count => 42} }
 
       before do
@@ -89,8 +89,8 @@ describe QueueingRabbit::Client::Bunny do
 
     describe '#define_exchange' do
       context 'when only channel is given' do
-        let(:channel) { mock }
-        let(:default_exchange) { mock }
+        let(:channel) { double }
+        let(:default_exchange) { double }
 
         before do
           channel.should_receive(:default_exchange).
@@ -103,10 +103,10 @@ describe QueueingRabbit::Client::Bunny do
       end
 
       context 'with arguments and type' do
-        let(:channel) { mock }
+        let(:channel) { double }
         let(:name) { 'some_exchange_name' }
         let(:options) { {:type => 'direct', :durable => true} }
-        let(:exchange) { mock }
+        let(:exchange) { double }
 
         it 'creates an exchange of given type and options' do
           channel.should_receive(:direct).with(name, :durable => true).
@@ -117,9 +117,9 @@ describe QueueingRabbit::Client::Bunny do
     end
 
     describe '#enqueue' do
-      let(:exchange) { mock }
-      let(:payload) { mock }
-      let(:options) { mock }
+      let(:exchange) { double }
+      let(:payload) { double }
+      let(:options) { double }
 
       it "publishes a new message to given exchange with given options" do
         exchange.should_receive(:publish).with(payload, options)
@@ -147,7 +147,7 @@ describe QueueingRabbit::Client::Bunny do
 
     describe '#purge_queue' do
 
-      let(:queue) { mock }
+      let(:queue) { double }
 
       it 'purges the queue and fires the provided callback when done' do
         queue.should_receive(:purge)
@@ -164,7 +164,7 @@ describe QueueingRabbit::Client::Bunny do
           client.connection.should_receive(:close)
           Thread.new { sleep 1; client.next_tick { client.close } }
           expect { Timeout.timeout(5) { client.begin_worker_loop } }.
-              not_to raise_error(Timeout::Error)
+              not_to raise_error { |e| expect(e).to be_a(Timeout::Error) }
         end
 
       end

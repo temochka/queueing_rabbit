@@ -60,10 +60,10 @@ describe QueueingRabbit::Worker do
   end
 
   context 'instance methods' do
-    let(:connection) { mock }
-    let(:queue) { mock }
-    let(:payload) { mock }
-    let(:metadata) { mock }
+    let(:connection) { double }
+    let(:queue) { double }
+    let(:payload) { double }
+    let(:metadata) { double }
 
     subject { worker }
 
@@ -82,7 +82,7 @@ describe QueueingRabbit::Worker do
         class_based_job.should_receive(:perform).with(payload, metadata)
         instance_based_job.should_receive(:new).
                            with(payload, metadata).
-                           and_return(mock(:perform => nil))
+                           and_return(double(:perform => nil))
       end
 
       it 'listens to queues specified by jobs' do
@@ -103,8 +103,8 @@ describe QueueingRabbit::Worker do
     end
 
     describe "#use_pidfile" do
-      let(:file_name) { mock }
-      let(:file) { mock }
+      let(:file_name) { double }
+      let(:file) { double }
 
       context 'given pidfile is already in use' do
 
@@ -149,7 +149,7 @@ describe QueueingRabbit::Worker do
     end
 
     describe "#remove_pidfile" do
-      let(:file_name) { mock }
+      let(:file_name) { double }
 
       before do
         subject.instance_variable_set(:@pidfile, file_name)
@@ -188,7 +188,7 @@ describe QueueingRabbit::Worker do
 
     describe '#stop' do
 
-      let(:file_name) { mock }
+      let(:file_name) { double }
 
       before do
         subject.instance_variable_set(:@pidfile, file_name)

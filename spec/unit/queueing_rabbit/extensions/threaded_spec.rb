@@ -34,7 +34,7 @@ describe QueueingRabbit::JobExtensions::Threaded, :ruby => '1.8.7'  do
   end
 
   context 'new instance methods' do
-    subject { test_job.new(mock, mock) }
+    subject { test_job.new(double, double) }
 
     it { should respond_to(:perform_and_terminate) }
   end

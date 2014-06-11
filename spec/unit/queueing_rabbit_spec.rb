@@ -4,24 +4,24 @@ describe QueueingRabbit do
   include_context "No existing connections"
   include_context "StringIO logger"
 
-  let(:connection) { mock }
-  let(:queue_name) { mock }
+  let(:connection) { double }
+  let(:queue_name) { double }
   let(:queue_options) { {:durable => true} }
-  let(:channel) { mock }
+  let(:channel) { double }
   let(:channel_options) { {:prefetch => 1, :auto_recovery => true} }
-  let(:exchange_name) { mock }
+  let(:exchange_name) { double }
   let(:exchange_options) { {:type => :direct, :durable => true} }
   let(:binding_declaration_1) { {:routing_key => 'routing_key'} }
   let(:binding_declaration_2) { {:routing_key => 'routing_key2'} }
   let(:job) {
-    stub(:queue_name => queue_name,
-         :queue_options => queue_options,
-         :channel_options => channel_options,
-         :exchange_name => exchange_name,
-         :exchange_options => exchange_options,
-         :binding_declarations => [binding_declaration_1, 
-                                   binding_declaration_2],
-         :bind_queue? => true)
+    double(:queue_name => queue_name,
+           :queue_options => queue_options,
+           :channel_options => channel_options,
+           :exchange_name => exchange_name,
+           :exchange_options => exchange_options,
+           :binding_declarations => [binding_declaration_1, 
+                                     binding_declaration_2],
+           :bind_queue? => true)
   }
 
   it { should respond_to(:logger) }
@@ -42,10 +42,10 @@ describe QueueingRabbit do
   end
 
   describe ".enqueue" do
-    let(:payload) { mock(:to_s => 'payload') }
-    let(:options) { mock }
-    let(:exchange) { mock }
-    let(:channel) { mock }
+    let(:payload) { double(:to_s => 'payload') }
+    let(:options) { double }
+    let(:exchange) { double }
+    let(:channel) { double }
 
     before do
       subject.instance_variable_set(:@connection, connection)
@@ -57,22 +57,22 @@ describe QueueingRabbit do
     end
 
     it 'returns true when a message was enqueued successfully' do
-      subject.enqueue(job, payload, options).should be_true
+      subject.enqueue(job, payload, options).should be true
     end
 
     it 'keeps the record of enqueued job at info level' do
       subject.should_receive(:info).and_return(nil)
-      subject.enqueue(job, payload, options).should be_true
+      subject.enqueue(job, payload, options).should be true
     end
   end
 
   describe '.publish' do
 
     let(:bus) { QueueingRabbit::AbstractBus }
-    let(:payload) { mock(:to_s => 'payload') }
-    let(:options) { mock }
-    let(:exchange) { mock }
-    let(:channel) { mock }
+    let(:payload) { double(:to_s => 'payload') }
+    let(:options) { double }
+    let(:exchange) { double }
+    let(:channel) { double }
 
     it 'publishes payload to a given bus with options' do
       subject.instance_variable_set(:@connection, connection)
@@ -81,21 +81,21 @@ describe QueueingRabbit do
               and_yield(channel, exchange)
       connection.should_receive(:publish).with(exchange, payload, options)
       channel.should_receive(:close)
-      subject.publish(bus, payload, options).should be_true
+      subject.publish(bus, payload, options).should be true
     end
 
   end
 
   describe '.publish_to_exchange' do
 
-    let(:exchange) { mock }
-    let(:payload) { mock }
-    let(:options) { mock }
+    let(:exchange) { double }
+    let(:payload) { double }
+    let(:options) { double }
 
     it 'publishes payload to a given exchange with options' do
       subject.instance_variable_set(:@connection, connection)
       connection.should_receive(:publish).with(exchange, payload, options)
-      subject.publish_to_exchange(exchange, payload, options).should be_true
+      subject.publish_to_exchange(exchange, payload, options).should be true
     end
 
   end
@@ -114,9 +114,9 @@ describe QueueingRabbit do
   end
 
   describe '.follow_job_requirements' do
-    let(:channel) { mock }
-    let(:exchange) { mock }
-    let(:queue) { mock }
+    let(:channel) { double }
+    let(:exchange) { double }
+    let(:queue) { double }
 
     before do
       subject.instance_variable_set(:@connection, connection)
@@ -144,12 +144,12 @@ describe QueueingRabbit do
   end
 
   describe '.follow_bus_requirements' do
-    let(:channel) { mock }
-    let(:exchange) { mock }
+    let(:channel) { double }
+    let(:exchange) { double }
     let(:bus) {
-      stub(:channel_options => channel_options,
-           :exchange_name => exchange_name,
-           :exchange_options => exchange_options)
+      double(:channel_options => channel_options,
+             :exchange_name => exchange_name,
+             :exchange_options => exchange_options)
     }
 
     before do
@@ -171,8 +171,8 @@ describe QueueingRabbit do
   end
 
   describe ".queue_size" do
-    let(:size) { mock }
-    let(:queue) { mock }
+    let(:size) { double }
+    let(:queue) { double }
 
     before do
       subject.instance_variable_set(:@connection, connection)
@@ -191,7 +191,7 @@ describe QueueingRabbit do
   end
 
   describe ".purge_queue" do
-    let(:queue) { mock }
+    let(:queue) { double }
 
     before do
       subject.instance_variable_set(:@connection, connection)
@@ -205,7 +205,7 @@ describe QueueingRabbit do
     end
 
     it 'purges messages from the queue' do
-      subject.purge_queue(job).should be_true
+      subject.purge_queue(job).should be true
     end
   end
 

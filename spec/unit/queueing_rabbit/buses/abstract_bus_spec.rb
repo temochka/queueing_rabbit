@@ -24,7 +24,7 @@ describe QueueingRabbit::AbstractBus do
 
   describe '.demand_batch_publishing!' do
 
-    let(:exchange) { mock }
+    let(:exchange) { double }
     
     it 'assigns a shared exchange instance to a job class' do
       QueueingRabbit.should_receive(:follow_bus_requirements).
@@ -32,7 +32,7 @@ describe QueueingRabbit::AbstractBus do
                      and_yield(nil, exchange)
       subject.demand_batch_publishing!
       expect(subject.shared_exchange).to eq(exchange)
-      expect(subject.batch_publishing?).to be_true
+      expect(subject.batch_publishing?).to be true
       expect(QueueingRabbit::AbstractBus.shared_exchange).to be_nil
     end
 

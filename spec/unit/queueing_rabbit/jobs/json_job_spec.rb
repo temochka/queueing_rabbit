@@ -3,7 +3,7 @@ require 'spec_helper'
 describe QueueingRabbit::JSONJob do
   let(:json_job) { QueueingRabbit::JSONJob }
   let(:payload) { JSON.dump(:foo => 'bar') }
-  let(:metadata) { mock }
+  let(:metadata) { double }
 
   subject { json_job.new(payload, metadata) }
 
