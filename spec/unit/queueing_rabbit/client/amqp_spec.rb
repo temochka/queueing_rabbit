@@ -139,7 +139,7 @@ describe QueueingRabbit::Client::AMQP do
     describe '#close' do
       before do
         subject.should_receive(:info)
-        connection.should_receive(:close).and_yield
+        connection.should_receive(:disconnect).and_yield
         EM.should_receive(:stop)
       end
 

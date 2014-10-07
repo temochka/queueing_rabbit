@@ -14,6 +14,7 @@ module QueueingRabbit
 
       @messages_lock = Monitor.new
       @messages = {}
+      @channels = []
 
       sync_stdio
       validate_jobs

@@ -197,6 +197,7 @@ describe QueueingRabbit::Worker do
 
       it 'closes the connection, removes the pidfile and reports the event' do
         connection.should_receive(:next_tick).and_yield
+        connection.should_receive(:wait_while_for).and_yield
         connection.should_receive(:close).and_yield
         File.stub(:exists?).with(file_name).and_return(true)
         File.should_receive(:delete).with(file_name)
