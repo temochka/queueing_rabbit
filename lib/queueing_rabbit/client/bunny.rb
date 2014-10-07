@@ -15,7 +15,11 @@ module QueueingRabbit
         end
 
         def ack
-          @channel.ack(@delivery_info.delivery_tag, false)
+          @channel.ack(delivery_tag, false)
+        end
+
+        def delivery_tag
+          @delivery_info.delivery_tag
         end
 
         def headers
