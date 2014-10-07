@@ -78,7 +78,7 @@ module QueueingRabbit
       def close
         info "closing AMQP broker connection..."
 
-        connection.close do
+        connection.disconnect do
           yield if block_given?
 
           EM.stop if EM.reactor_running?
@@ -140,6 +140,14 @@ module QueueingRabbit
 
       def next_tick(&block)
         EM.next_tick(&block)
+      end
+
+      def wait_while_for(proc, period, _ = nil, &block)
+        if proc.call
+          EM.add_timer(period, &block)
+        else
+          block.call
+        end
       end
 
       def begin_worker_loop

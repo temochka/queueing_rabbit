@@ -16,6 +16,10 @@ module QueueingRabbit
       @heartbeat ||= 10
     end
 
+    def jobs_wait_timeout
+      @jobs_wait_timeout ||= 5
+    end
+
     def default_client
       QueueingRabbit::Client::Bunny
     end

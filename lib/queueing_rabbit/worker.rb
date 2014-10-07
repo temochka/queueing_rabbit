@@ -1,3 +1,5 @@
+require 'monitor'
+
 module QueueingRabbit
   class Worker
 
@@ -10,13 +12,43 @@ module QueueingRabbit
     def initialize(*jobs)
       self.jobs = jobs.map { |job| job.to_s.strip }
 
+      @messages_lock = Monitor.new
+      @messages = {}
+
       sync_stdio
       validate_jobs
       constantize_jobs
     end
 
+    def checked_messages_count
+      @messages_lock.synchronize do
+        @messages.count
+      end
+    end
+
+    def checkin_message(delivery_tag)
+      return unless @working
+
+      @messages_lock.synchronize do
+        @messages[delivery_tag] = true
+      end
+    end
+
+    def checkout_message(delivery_tag)
+      @messages_lock.synchronize do
+        @messages.delete(delivery_tag)
+      end
+    end
+
+    def working?
+      @working
+    end
+
     def work
-      trap_signals
+      return if working?
+
+      @working = true
+      @channels = []
 
       QueueingRabbit.trigger_event(:worker_ready)
 
@@ -26,6 +58,10 @@ module QueueingRabbit
     end
 
     def work!
+      return if working?
+
+      trap_signals
+
       info "starting a new queueing_rabbit worker #{self}"
 
       QueueingRabbit.begin_worker_loop { work }
@@ -59,10 +95,12 @@ module QueueingRabbit
 
     def stop(connection = QueueingRabbit.connection)
       connection.next_tick do
-        connection.close do
-          info "gracefully shutting down the worker #{self}"
-          remove_pidfile
-          QueueingRabbit.trigger_event(:consuming_done)
+        @working = false
+        close_channels do
+          connection.close do
+            info "gracefully shutting down the worker #{self}"
+            remove_pidfile
+          end
         end
       end
     end
@@ -85,6 +123,15 @@ module QueueingRabbit
 
   private
 
+    def close_channels(connection = QueueingRabbit.connection)
+      connection.wait_while_for(Proc.new { checked_messages_count > 0 },
+                                QueueingRabbit.jobs_wait_timeout) do
+        @channels.each(&:close)
+        QueueingRabbit.trigger_event(:consuming_done)
+        yield
+      end
+    end
+
     def validate_jobs
       if jobs.nil? || jobs.empty?
         fatal "no jobs specified to work on."
@@ -104,9 +151,13 @@ module QueueingRabbit
     end
 
     def run_job(conn, job)
-      QueueingRabbit.follow_job_requirements(job) do |_, _, queue|
+      QueueingRabbit.follow_job_requirements(job) do |ch, _, queue|
+        @channels << ch
         conn.listen_queue(queue, job.listening_options) do |payload, metadata|
-          invoke_job(job, payload, metadata)
+          if checkin_message(metadata.object_id)
+            invoke_job(job, payload, metadata)
+            checkout_message(metadata.object_id)
+          end
         end
       end
     end

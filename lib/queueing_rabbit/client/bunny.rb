@@ -121,6 +121,17 @@ module QueueingRabbit
         end
       end
 
+      def wait_while_for(proc, seconds, interval = 0.5)
+        end_time = Time.now.to_i + seconds
+
+        while Time.now.to_i < end_time do
+          return unless proc.call
+          sleep interval
+        end
+
+        yield
+      end
+
     private
 
       def initialize(connection)
