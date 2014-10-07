@@ -90,23 +90,27 @@ module QueueingRabbit
   end
 
   def follow_job_requirements(job)
+    ret = nil
     follow_bus_requirements(job) do |ch, ex|
       conn.define_queue(ch, job.queue_name, job.queue_options) do |q|
         if job.bind_queue?
           job.binding_declarations.each { |o| conn.bind_queue(q, ex, o) }
         end
 
-        yield ch, ex, q
+        ret = yield ch, ex, q
       end
     end
+    ret
   end
 
   def follow_bus_requirements(bus)
+    ret = nil
     conn.open_channel(bus.channel_options) do |ch, _|
       conn.define_exchange(ch, bus.exchange_name, bus.exchange_options) do |ex|
-        yield ch, ex
+        ret = yield ch, ex
       end
     end
+    ret
   end
 
   def queue_size(job)
