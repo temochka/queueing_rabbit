@@ -4,6 +4,7 @@
 .config
 .yardoc
 .rvmrc
+.idea
 *.sublime-project
 *.sublime-workspace
 Gemfile.lock
