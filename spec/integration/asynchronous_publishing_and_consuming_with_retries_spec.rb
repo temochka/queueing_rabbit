@@ -33,7 +33,7 @@ describe "Asynchronous publishing and consuming with retries" do
     }
     let(:job_name) { 'RetryablePrintLineJob' }
     let(:io) { StringIO.new }
-    let(:worker) { QueueingRabbit::Worker.new(job_name) }
+    let(:worker) { QueueingRabbit::Worker.new([job_name]) }
 
     before(:each) do
       QueueingRabbit.drop_connection

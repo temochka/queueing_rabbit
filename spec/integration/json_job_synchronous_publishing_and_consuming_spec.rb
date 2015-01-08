@@ -20,7 +20,7 @@ describe "Synchronous publishing and consuming with JSON serialization" do
     }
     let(:job_name) { 'PrintLineFromJSONJob' }
     let(:io) { StringIO.new }
-    let(:worker) { QueueingRabbit::Worker.new(job_name) }
+    let(:worker) { QueueingRabbit::Worker.new([job_name]) }
 
     before do
       job.io = io

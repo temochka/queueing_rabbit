@@ -12,7 +12,7 @@ describe QueueingRabbit::Worker do
   let(:instance_based_job) { Class.new(QueueingRabbit::AbstractJob) }
   let(:creation) {
     Proc.new do
-      QueueingRabbit::Worker.new('QueueingRabbitClassJob', QueueingRabbitInstanceJob)
+      QueueingRabbit::Worker.new(['QueueingRabbitClassJob', QueueingRabbitInstanceJob])
     end
   }
   let(:worker) { creation.call }
@@ -33,7 +33,7 @@ describe QueueingRabbit::Worker do
       end
 
       it 'raises JobNotPresentError' do
-        expect { subject.new() }.
+        expect { subject.new([]) }.
                to raise_error(QueueingRabbit::JobNotPresentError)
       end
     end
@@ -46,7 +46,7 @@ describe QueueingRabbit::Worker do
       end
 
       it 'raises JobNotFoundError' do
-        expect { subject.new(nonexistent_class_name) }.
+        expect { subject.new([nonexistent_class_name]) }.
                to raise_error(QueueingRabbit::JobNotFoundError)
       end
     end
@@ -187,7 +187,6 @@ describe QueueingRabbit::Worker do
     end
 
     describe '#stop' do
-
       let(:file_name) { double }
 
       before do
@@ -195,16 +194,27 @@ describe QueueingRabbit::Worker do
         QueueingRabbit.stub(:connection).and_return(connection)
       end
 
-      it 'closes the connection, removes the pidfile and reports the event' do
-        connection.should_receive(:next_tick).and_yield
-        connection.should_receive(:wait_while_for).and_yield
-        connection.should_receive(:close).and_yield
-        File.stub(:exists?).with(file_name).and_return(true)
-        File.should_receive(:delete).with(file_name)
-        QueueingRabbit.should_receive(:trigger_event).with(:consuming_done)
-        subject.stop
+      context 'when stopped gracefully' do
+        it 'closes the connection, removes the pidfile, waits for jobs to finish and reports the event' do
+          connection.should_receive(:next_tick).and_yield
+          connection.should_receive(:close).and_yield
+          worker.mutex_pool.should_receive(:lock)
+          QueueingRabbit.should_receive(:trigger_event).with(:consuming_done)
+          File.stub(:exists?).with(file_name).and_return(true)
+          File.should_receive(:delete).with(file_name)
+          subject.stop(QueueingRabbit.connection, true)
+        end
       end
 
+      context 'when stopped immediately' do
+        it 'closes the connection and removes the pidfile' do
+          connection.should_receive(:next_tick).and_yield
+          connection.should_receive(:close).and_yield
+          File.stub(:exists?).with(file_name).and_return(true)
+          File.should_receive(:delete).with(file_name)
+          subject.stop
+        end
+      end
     end
 
   end

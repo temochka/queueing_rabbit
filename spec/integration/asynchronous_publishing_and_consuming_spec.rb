@@ -14,7 +14,7 @@ describe "Asynchronous publishing and consuming example" do
     let(:connection) { QueueingRabbit.connection }
     let(:job) { PrintLineJob }
     let(:io) { StringIO.new }
-    let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
+    let(:worker) { QueueingRabbit::Worker.new([job.to_s]) }
 
     before(:each) do
       QueueingRabbit.drop_connection

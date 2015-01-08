@@ -9,9 +9,10 @@ namespace :queueing_rabbit do
     require 'queueing_rabbit'
 
     jobs = (ENV['JOBS'] || ENV['JOB']).to_s.split(',')
+    concurrency = ENV['CONCURRENCY'] && ENV['CONCURRENCY'].to_i
 
     begin
-      worker = QueueingRabbit::Worker.new(*jobs)
+      worker = QueueingRabbit::Worker.new(jobs, concurrency)
     rescue QueueingRabbit::JobNotPresentError, QueueingRabbit::JobNotFoundError
       abort "set JOB env var, e.g. $ JOB=ExportDataJob,CompressFileJob " \
             "rake queueing_rabbit:work"

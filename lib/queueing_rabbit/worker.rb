@@ -1,4 +1,4 @@
-require 'monitor'
+require "queueing_rabbit/misc/mutex_pool"
 
 module QueueingRabbit
   class Worker
@@ -7,38 +7,16 @@ module QueueingRabbit
 
     include QueueingRabbit::Logging
 
-    attr_accessor :jobs
+    attr_reader :jobs, :concurrency, :mutex_pool
 
-    def initialize(*jobs)
-      self.jobs = jobs.map { |job| job.to_s.strip }
-
-      @messages_lock = Monitor.new
-      @messages = {}
-      @channels = []
+    def initialize(jobs, concurrency = nil)
+      @jobs = jobs.map { |job| job.to_s.strip }.reject { |job| job.empty? }
+      @concurrency = concurrency || @jobs.count
+      @mutex_pool = ::MutexPool.new(@concurrency)
 
       sync_stdio
       validate_jobs
       constantize_jobs
-    end
-
-    def checked_messages_count
-      @messages_lock.synchronize do
-        @messages.count
-      end
-    end
-
-    def checkin_message(delivery_tag)
-      return unless @working
-
-      @messages_lock.synchronize do
-        @messages[delivery_tag] = true
-      end
-    end
-
-    def checkout_message(delivery_tag)
-      @messages_lock.synchronize do
-        @messages.delete(delivery_tag)
-      end
     end
 
     def working?
@@ -47,14 +25,10 @@ module QueueingRabbit
 
     def work
       return if working?
-
       @working = true
-      @channels = []
 
       QueueingRabbit.trigger_event(:worker_ready)
-
       jobs.each { |job| run_job(QueueingRabbit.connection, job) }
-
       QueueingRabbit.trigger_event(:consuming_started)
     end
 
@@ -62,9 +36,7 @@ module QueueingRabbit
       return if working?
 
       trap_signals
-
       info "starting a new queueing_rabbit worker #{self}"
-
       QueueingRabbit.begin_worker_loop { work }
     end
 
@@ -91,15 +63,26 @@ module QueueingRabbit
     end
 
     def to_s
-      "PID=#{pid}, JOBS=#{jobs.join(',')}"
+      "PID=#{pid}, JOBS=#{jobs.join(',')} CONCURRENCY=#{@concurrency}"
     end
 
-    def stop(connection = QueueingRabbit.connection)
+    def stop(connection = QueueingRabbit.connection, graceful = false)
       connection.next_tick do
-        @working = false
-        close_channels do
-          connection.close do
+        begin
+          @working = false
+          if graceful
+            Timeout.timeout(QueueingRabbit.jobs_wait_timeout) { @mutex_pool.lock }
+            QueueingRabbit.trigger_event(:consuming_done)
             info "gracefully shutting down the worker #{self}"
+          end
+        rescue Timeout::Error
+          error "a timeout (> #{QueueingRabbit.jobs_wait_timeout}s) when trying to gracefully shut down the worker " \
+                "#{self}"
+        rescue => e
+          error "a #{e.class} error occurred when trying to shut down the worker #{self}"
+          debug e
+        ensure
+          connection.close do
             remove_pidfile
           end
         end
@@ -124,24 +107,15 @@ module QueueingRabbit
 
   private
 
-    def close_channels(connection = QueueingRabbit.connection)
-      connection.wait_while_for(Proc.new { checked_messages_count > 0 },
-                                QueueingRabbit.jobs_wait_timeout) do
-        @channels.each(&:close)
-        QueueingRabbit.trigger_event(:consuming_done)
-        yield
-      end
-    end
-
     def validate_jobs
-      if jobs.nil? || jobs.empty?
+      if @jobs.nil? || @jobs.empty?
         fatal "no jobs specified to work on."
         raise JobNotPresentError.new("No jobs specified to work on.")
       end
     end
 
     def constantize_jobs
-      self.jobs = jobs.map do |job|
+      @jobs = @jobs.map do |job|
         begin
           Kernel.const_get(job)
         rescue NameError
@@ -152,12 +126,10 @@ module QueueingRabbit
     end
 
     def run_job(conn, job)
-      QueueingRabbit.follow_job_requirements(job) do |ch, _, queue|
-        @channels << ch
+      QueueingRabbit.follow_job_requirements(job) do |_, _, queue|
         conn.listen_queue(queue, job.listening_options) do |payload, metadata|
-          if checkin_message(metadata.object_id)
+          @mutex_pool.synchronize do
             invoke_job(job, payload, metadata)
-            checkout_message(metadata.object_id)
           end
         end
       end
@@ -170,8 +142,9 @@ module QueueingRabbit
 
     def trap_signals
       connection = QueueingRabbit.connection
-      Signal.trap("TERM") { stop(connection) }
-      Signal.trap("INT") { stop(connection) }
+      Signal.trap('QUIT') { stop(connection, true) }
+      Signal.trap('TERM') { stop(connection) }
+      Signal.trap('INT') { stop(connection) }
     end
 
     def cleanup_pidfile

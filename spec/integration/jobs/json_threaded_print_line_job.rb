@@ -10,7 +10,7 @@ class JSONThreadedPrintLineJob < QueueingRabbit::JSONJob
 
   queue :auto_delete => true
 
-  listen :ack => true,
+  listen :manual_ack => true,
          :block => false,
          :consumer_tag => 'threaded-json-consumer'
 

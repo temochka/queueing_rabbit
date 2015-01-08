@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'Terminating a worker' do
-
   include_context 'Auto-disconnect'
   include_context 'StringIO logger'
   
@@ -10,7 +9,7 @@ describe 'Terminating a worker' do
   let(:job) {
     Class.new(QueueingRabbit::AbstractJob) {
       queue 'sleep_and_ack'
-      listen :ack => true
+      listen :manual_ack => true
 
       def self.complete!
         @complete = true
@@ -27,19 +26,30 @@ describe 'Terminating a worker' do
       end
     }
   }
+  let(:worker) { QueueingRabbit::Worker.new([job_name]) }
 
   before do
     QueueingRabbit.purge_queue(job)
     stub_const(job_name, job)
   end
 
-  it "waits for currently running consumers" do
-    worker = QueueingRabbit::Worker.new(job_name)
-    worker.work
-    job.enqueue('')
-    sleep 1
-    worker.stop
-    expect(job).to be_complete
+  context 'when gracefully shut down' do
+    it 'waits for currently running consumers' do
+      worker.work
+      job.enqueue('')
+      sleep 1
+      worker.stop(QueueingRabbit.connection, true)
+      expect(job).to be_complete
+    end
   end
 
+  context 'when shut down immediately' do
+    it 'terminates right away' do
+      worker.work
+      job.enqueue('')
+      sleep 1
+      worker.stop
+      expect(job).to_not be_complete
+    end
+  end
 end

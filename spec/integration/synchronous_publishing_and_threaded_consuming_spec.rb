@@ -11,7 +11,7 @@ describe "Synchronous publishing and threaded consuming", :ruby => '1.8.7' do
     let(:job) { JSONThreadedPrintLineJob }
     let(:job_name) { 'JSONThreadedPrintLineJob' }
     let(:io) { StringIO.new }
-    let(:worker) { QueueingRabbit::Worker.new(job_name) }
+    let(:worker) { QueueingRabbit::Worker.new([job_name]) }
 
     before do
       QueueingRabbit.purge_queue(job)

@@ -25,7 +25,7 @@ describe 'JSON synchronous publishing via bus and asynchronous consuming via job
     end
   }
   let(:job_name) { 'PrintLineJob' }
-  let(:worker) { QueueingRabbit::Worker.new(job_name) }
+  let(:worker) { QueueingRabbit::Worker.new([job_name]) }
   let(:line) { "Hello, world!" }
   let(:io) { StringIO.new }
 

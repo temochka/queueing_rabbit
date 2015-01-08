@@ -21,7 +21,7 @@ describe "Asynchronous publishing and consuming using direct exchange" do
     }
     let(:job_name) { 'PrintLineDirectExchangeJob' }
     let(:io) { StringIO.new }
-    let(:worker) { QueueingRabbit::Worker.new(job_name) }
+    let(:worker) { QueueingRabbit::Worker.new([job_name]) }
 
     before do
       stub_const(job_name, job)

@@ -12,7 +12,7 @@ describe 'Binary synchronous publishing via bus and asynchronous consuming via j
     end
   }
   let(:job) { PrintLineJob }
-  let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
+  let(:worker) { QueueingRabbit::Worker.new([job.to_s]) }
   let(:line) { "Hello, world!" }
   let(:io) { StringIO.new }
 

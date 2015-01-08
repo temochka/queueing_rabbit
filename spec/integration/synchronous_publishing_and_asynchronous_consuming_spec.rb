@@ -13,7 +13,7 @@ describe "Synchronous publishing and asynchronous consuming example" do
 
   context "when a message is published synchronously and being consumed " \
           "asynchornously" do
-    let(:worker) { QueueingRabbit::Worker.new(job.to_s) }
+    let(:worker) { QueueingRabbit::Worker.new([job.to_s]) }
     let(:io) { StringIO.new }
 
     before do

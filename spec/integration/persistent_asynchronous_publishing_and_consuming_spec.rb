@@ -15,7 +15,7 @@ describe "Persistent asynchronous publishing and consuming" do
     let(:job) {
       Class.new(PrintLineJob) do
         queue 'persistent_print_line_job'
-        listen :ack => true
+        listen :manual_ack => true
         publish_with :persistent => true
         channel :use_publisher_confirms => true
 
@@ -27,7 +27,7 @@ describe "Persistent asynchronous publishing and consuming" do
     }
     let(:job_name) { 'PrintLineWithAcknowledgmentsJob' }
     let(:io) { StringIO.new }
-    let(:worker) { QueueingRabbit::Worker.new(job_name) }
+    let(:worker) { QueueingRabbit::Worker.new([job_name]) }
 
     before(:each) do
       QueueingRabbit.drop_connection
