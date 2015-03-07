@@ -2,6 +2,10 @@
 
 QueueingRabbit provides a Ruby DSL to interact with RabbitMQ. It is fairly flexible and allows you to integrate with existing infrastructure and naming conventions. It currently offers gems [bunny](https://github.com/ruby-amqp/bunny) and [amqp](https://github.com/ruby-amqp/amqp) as supported back-ends.
 
+## Disclaimer
+
+I built this gem at [Wildbit](http://wildbit.com) in 2012. Back then there weren’t any solid generic queueing systems targeting RabbitMQ for Ruby. The gem was open-sourced in early 2013, but I never put any effort in selling it to the community. Even though the gem is working, maintained, and is still used by Wildbit in production, in the long run you should be better with now-existing mainstream alternatives like [hutch](https://github.com/gocardless/hutch) and [sneakers](https://github.com/jondot/sneakers).
+
 ## Example
 
 The following Ruby program publishes an excerpt of Joseph Brodsky’s poem line by line to a RabbitMQ exchange and prints received messages on the screen.
