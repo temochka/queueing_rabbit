@@ -4,7 +4,7 @@ QueueingRabbit provides a Ruby DSL to interact with RabbitMQ. It is fairly flexi
 
 ## Disclaimer
 
-I built this gem at [Wildbit](http://wildbit.com) in 2012. Back then there weren’t any solid generic queueing systems targeting RabbitMQ for Ruby. The gem was open-sourced in early 2013, but I never put any effort in selling it to the community. Even though the gem is working, maintained, and is still used by Wildbit in production, in the long run you should be better with now-existing mainstream alternatives like [hutch](https://github.com/gocardless/hutch) and [sneakers](https://github.com/jondot/sneakers).
+I built this gem at [Wildbit](http://wildbit.com) in 2012. Back then there weren’t any solid generic queueing systems targeting RabbitMQ for Ruby. The gem was open-sourced in early 2013, but I never put any effort into selling it to the community. Even though the gem is working, maintained, and is still used by Wildbit in production, in the long run you should be better with now-existing mainstream alternatives like [hutch](https://github.com/gocardless/hutch) and [sneakers](https://github.com/jondot/sneakers).
 
 ## Example
 
