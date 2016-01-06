@@ -17,4 +17,10 @@ describe QueueingRabbit::JobExtensions::DirectExchange do
   its(:exchange_options) { should include(:type => :direct) }
   its(:binding_declarations) { should include(:routing_key => 'test_queue') }
 
+  describe '#binding_declarations' do
+    it 'is idempotent' do
+      subject.binding_declarations.length.should eq(1)
+      subject.binding_declarations.length.should eq(1)
+    end
+  end
 end

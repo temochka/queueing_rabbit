@@ -16,7 +16,7 @@ module QueueingRabbit
 
         def binding_declarations
           @binding_declarations ||= []
-          @binding_declarations.push(:routing_key => queue_name.to_s)
+          @binding_declarations + [:routing_key => queue_name.to_s]
         end
       end
 
